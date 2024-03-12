@@ -31,22 +31,14 @@ void renderModel(const aiScene* scene) {
         return;
     }
 
-    // Defina as coordenadas de posição do canto da malha
-    float cantoMalhaX = 10.0f; // Coordenada X do canto da malha
-    float cantoMalhaY = 0.0f; // Coordenada Y do canto da malha
-    float cantoMalhaZ = 10.0f; // Coordenada Z do canto da malha
+    
 
-    // Ajuste as coordenadas de posição do carrinho em relação ao canto da malha
-    float carrinhoPosX = cantoMalhaX + 1.0f; // Deslocamento do carrinho em X
-    float carrinhoPosY = cantoMalhaY; // Mantenha a altura do carrinho
-    float carrinhoPosZ = cantoMalhaZ + 1.0f; // Deslocamento do carrinho em Z
+ 
     
     float anguloRotacao = 90.0f; // Rotacionar o carrinho 90 graus em torno do eixo verde (Y)
 
     glPushMatrix(); // Inicie a matriz de transformação atual
-    glTranslatef(carrinhoPosX, carrinhoPosY, carrinhoPosZ); // Aplique uma translação
-    glRotatef(anguloRotacao, 1.0f, 1.0f, 0.5f); // Rotacione o carrinho em torno do eixo verde (Y)
-
+   
     // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
@@ -132,8 +124,8 @@ void display() {
     glutSwapBuffers();
 
 glBegin(GL_LINES);
-for (int i = 0; i < 18; ++i) {
-    for (int j = 0; j < 18; ++j) {
+for (int i = 0; i < 38; ++i) {
+    for (int j = 0; j < 38; ++j) {
         // Coordenadas dos vértices dos triângulos
         int x1 = i;
         int y1 = j;
