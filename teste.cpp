@@ -11,6 +11,7 @@
 #include <string>
 
 #define MAX_DIMENSION 1000
+GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
 float cameraX = 10.0f;
 float cameraY = 30.0f;
@@ -22,6 +23,69 @@ int altura;
 
 const char* carrinhoPath = "carro.obj"; // Caminho para o arquivo OBJ do carrinho
 const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo
+
+
+void desenhar_luz(){
+	
+   glPushAttrib (GL_LIGHTING_BIT);
+   
+   GLfloat mat_diffuse[] = { 1.0, 1.0, 0.0, 1.0 };
+   GLfloat mat_emission[] = { 1.0, 1.0, 0.0, 1.0 };
+          
+   //atribui características ao material
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+   glMaterialfv(GL_FRONT, GL_EMISSION, mat_emission);
+ 
+   glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat_diffuse);
+    
+   glPushMatrix();
+   glTranslatef(luz_pontual[0],luz_pontual[1],luz_pontual[2]); 
+   
+   glEnable(GL_LIGHTING);
+   glColor3f (1.0, 1.0, 0.0);
+   glutSolidSphere(0.05,50,50);
+   glDisable(GL_LIGHTING);
+   
+   glPopAttrib();
+   glPopMatrix();
+}
+
+void iluminar(){
+   //LUZ
+   // fontes de luz são iniciadas com cor preta
+   // número de fontes de luz afeta performance
+    
+   //LUZ 0
+  
+   //define características a serem associadas à fonte de luz 0	
+   //fonte de luz direcional (por que a coordenada homogênea w == 0?)
+   GLfloat light0_position[] = { 0.0, 1.0, 0.0, 0.0 };
+   GLfloat light0_diffuse[] = { 0.1, 0.1, 0.1, 1.0 };
+   
+   //atribui características para a fonte de luz 0
+   //cor padrão: branco
+   glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
+   glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
+   
+   //LUZ 1
+   
+   //fonte de luz pontual (por que a coordenada homogênea w == 1?)
+   //define características a serem associadas à fonte de luz 1	
+   GLfloat light1_diffuse[] = { 0.6, 0.6, 0.6, 1.0 };
+   GLfloat light1_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+   GLfloat light1_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+   
+   //atribui as características para a fonte de luz 1
+   //(experimentem remover alguns dos componentes abaixo)
+   glLightfv(GL_LIGHT1, GL_POSITION, luz_pontual);
+   glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
+   glLightfv(GL_LIGHT1, GL_SPECULAR, light1_specular);
+   glLightfv(GL_LIGHT1, GL_AMBIENT, light1_ambient); 
+   
+   //"acende" cada uma das luzes configuradas
+   glEnable(GL_LIGHT0);
+   glEnable(GL_LIGHT1);
+}
 
 
 
@@ -38,7 +102,12 @@ void renderModel(const aiScene* scene) {
     float anguloRotacao = 90.0f; // Rotacionar o carrinho 90 graus em torno do eixo verde (Y)
 
     glPushMatrix(); // Inicie a matriz de transformação atual
-   
+
+    glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
+    glRotatef(90.0f, 0.0, 0.0 , 1.0f);
+
+    // GlTranslatef(Para os lados do terreno, Para cima e baixo, Para frente e tras);
+    glTranslatef(20.0f, 0.0f, 3.0f);
     // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
@@ -119,6 +188,8 @@ void display() {
      Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(carrinhoPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
     
+    desenhar_luz();
+
     renderModel(scene);
 
     glutSwapBuffers();
@@ -159,19 +230,19 @@ glEnd();
 
 
     //visualização dos eixos
-    glBegin(GL_LINES);
-        glColor3f (1.0, 0.0, 0.0);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(1.0, 0.0, 0.0);
-        
-        glColor3f (0.0, 1.0, 0.0);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 1.0, 0.0);
-      
-        glColor3f (0.0, 0.0, 1.0);
-        glVertex3f(0.0, 0.0, 0.0);
-        glVertex3f(0.0, 0.0, 1.0);    
-    glEnd();
+glBegin(GL_LINES);
+    glColor3f (1.0, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(1.0, 0.0, 0.0);
+
+    glColor3f (0.0, 1.0, 0.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(0.0, 1.0, 0.0);
+  
+    glColor3f (0.0, 0.0, 1.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, 1.0);
+glEnd();
 
     glFlush();
 }
@@ -208,8 +279,10 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutCreateWindow("Malha de Triângulos Vazados OpenGL");
-
+    
     glEnable(GL_DEPTH_TEST);
+    iluminar();
+
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
