@@ -13,9 +13,9 @@
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
-float cameraX = 20.0f;
+float cameraX = 10.0f;
 float cameraY = 30.0f;
-float cameraZ = 30.0f;
+float cameraZ = 10.0f;
 
 int** matrizImagem;
 int largura;
@@ -177,6 +177,7 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
+
     // Configuração da câmera
     gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0);
 
@@ -251,7 +252,7 @@ void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, (double)w / (double)h, 1.0, 100.0);
+    gluPerspective(40.0, (double)w / (double)h, 1.0, 100.0);
     glMatrixMode(GL_MODELVIEW);
 }
 
