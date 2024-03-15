@@ -14,8 +14,8 @@
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
 float cameraX = 10.0f;
-float cameraY = 30.0f;
-float cameraZ = 20.0f;
+float cameraY = 40.0f;
+float cameraZ = 10.0f;
 
 int** matrizImagem;
 int largura;
