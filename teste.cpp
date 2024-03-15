@@ -59,7 +59,7 @@ void renderModel(const aiScene* scene) {
 
 
 
-int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
+int** lerImagemPPM(const char* nomeArquivo, int* largura, int* altura) {
     FILE *arquivo;
     char tipo[3];
     int maxValor;
@@ -167,10 +167,6 @@ void renderModel(const aiScene* scene) {
         std::cerr << "Erro ao carregar o modelo do carrinho." << std::endl;
         return;
     }
-
-    
-
- 
     
     float anguloRotacao = 90.0f; // Rotacionar o carrinho 90 graus em torno do eixo verde (Y)
 
@@ -201,7 +197,7 @@ void renderModel(const aiScene* scene) {
 
 
 
-int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
+int** lerImagemPPM(const char* nomeArquivo, int* largura, int* altura) {
     FILE *arquivo;
     char tipo[3];
     int maxValor;
@@ -348,7 +344,7 @@ void specialKeys(int key, int x, int y) {
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
-    matrizImagem = lerImagemPGM("imagem.ppm", &largura, &altura);
+    matrizImagem = lerImagemPPM("imagem.ppm", &largura, &altura);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutCreateWindow("Malha de Triângulos Vazados OpenGL");
@@ -496,7 +492,7 @@ void specialKeys(int key, int x, int y) {
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
-    matrizImagem = lerImagemPGM("imagem.ppm", &largura, &altura);
+    matrizImagem = lerImagemPPM("imagem.ppm", &largura, &altura);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutCreateWindow("Malha de Triângulos Vazados OpenGL");
