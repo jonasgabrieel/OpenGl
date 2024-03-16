@@ -102,12 +102,13 @@ void renderModel(const aiScene* scene) {
     float anguloRotacao = 90.0f; // Rotacionar o carrinho 90 graus em torno do eixo verde (Y)
 
     glPushMatrix(); // Inicie a matriz de transformação atual
-
+    glPushAttrib(GL_CURRENT_BIT);
+    glColor3f(0.0f,0.0f,1.0f);
     glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
     glRotatef(90.0f, 0.0, 0.0 , 1.0f);
 
     // GlTranslatef(Para os lados do terreno, Para cima e baixo, Para frente e tras);
-    glTranslatef(20.0f, 0.0f, 3.0f);
+    glTranslatef(20.0f, 1.0f, 6.0f);
     // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
@@ -122,7 +123,7 @@ void renderModel(const aiScene* scene) {
         }
         glEnd();
     }
-
+    glPopAttrib();
     glPopMatrix(); // Restaure a matriz de transformação anterior
 }
 
@@ -183,6 +184,20 @@ void display() {
 
     // Cor de fundo (branco)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+    // Configurar o material do carrinho
+    GLfloat mat_ambient[] = {1.0f, 0.2f, 0.2f, 1.0f};
+    GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat mat_shininess[] = {100.0f};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+    // Definir a cor do carrinho
+    glColor3f(1.0f, 0.0f, 0.0f); // Vermelho
 
     // Cor das arestas dos triângulos (azul escuro)
     glColor3f(0.0f, 0.0f, 0.5f);
