@@ -13,6 +13,8 @@
 // Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp
 // Para executar: ./teste
 
+// Para mover o carrinho aperte no botões W,A,S,D
+
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
@@ -24,9 +26,9 @@ float cameraZ = 10.0f;
 float carX = 0.0f;
 float carY = 20.0f;
 float carZ = 0.0f;
-float angulo = 0.0f;
-int direcao = 0;
-float distancia = 0;
+float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
+int direcaoMovimento = 0; // Variável para definir se o carrinho está indo ou voltando
+float distanciaLadeira = 0; // Variável para definir a distancia do carro para a ladeira proxima.
 
 int** matrizImagem;
 int largura;
@@ -104,12 +106,13 @@ double distanciaEuclidiana(double x1, double y1, double x2, double y2) {
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
+// Função que prever alguma elevação no terreno e sinalizar quando estiver perto
 int preverElevacao(float x, float y){
     int intX = x;
     int intY = y;
-    printf("%d, %d %lf\n", matrizImagem[intX+3][intY], matrizImagem[intX][intY], distancia);
-    if (distancia > 0.09){
-        if(distancia <= 2.4){
+    printf("%d, %d %lf\n", matrizImagem[intX+3][intY], matrizImagem[intX][intY], distanciaLadeira);
+    if (distanciaLadeira > 0.09){
+        if(distanciaLadeira <= 2.4){
             return 1;
         }else{
             return 0;
@@ -119,11 +122,11 @@ int preverElevacao(float x, float y){
             angulo = 0.0f;
             if(matrizImagem[intX+i][intY] != matrizImagem[intX][intY]){
                 printf("tem ladeira\n");
-                distancia = distanciaEuclidiana(intX+i,intY, intX, intY)-0.0;
-                if(distancia == 1){
+                distanciaLadeira = distanciaEuclidiana(intX+i,intY, intX, intY)-0.0;
+                if(distanciaLadeira == 1){
                     angulo = 25.956f;
                 }
-                if(distancia == 2){
+                if(distanciaLadeira == 2){
                     angulo = 7.416f;
                 }
                 return 1;
@@ -143,10 +146,6 @@ void renderModel(const aiScene* scene) {
         return;
     }
 
-    
-
- 
-    
     float anguloRotacao = 90.0f; // Rotacionar o carrinho 90 graus em torno do eixo verde (Y)
 
     glPushMatrix(); // Inicie a matriz de transformação atual
@@ -157,39 +156,39 @@ void renderModel(const aiScene* scene) {
     glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
     glRotatef(90.0f, 0.0, 0.0 , 1.0f);
 
-
-    if(direcao == 1){
+    // Aumenta o angulo do carro, e sobe um pouco no eixo Z. (Indo para frente em uma ladeira)
+    if(direcaoMovimento == 1){
         if(preverElevacao(carX,carY)){
-            distancia -= 0.1;
+            distanciaLadeira -= 0.1;
             angulo += 1.875f;
             carZ += 0.042f;
             glRotatef(-angulo, 1.0f, 0.0, 0.0);
         }else{
-            distancia -=0.1;
+            distanciaLadeira -=0.1;
         }
     }else{
-        if(direcao == -1){
+        // Diminui o angulo do carro (Voltando para tras em uma ladeira)
+        if(direcaoMovimento == -1){
             if(preverElevacao(carX,carY)){
                 if(angulo == 0){
                     angulo = 45.0f;
                     carZ -= 0.042f;
                     glRotatef(-angulo,1.0f,0.0f,0.0f);
                 }else{
-                    distancia += 0.1;
+                    distanciaLadeira += 0.1;
                     angulo -= 1.875f;
                     carZ -= 0.042f;
                     glRotatef(-angulo,1.0f,0.0f,0.0f);
                 }
             }
         }else{
-            if(direcao == 0){
+            // Não realizar nenhum alteração no angulo. (Quando for movimentar a camera ou ir para os lados)
+            if(direcaoMovimento == 0){
                 glRotatef(-angulo,1.0f,0.0f,0.0f);
             }
         }
     }
     
-
-    // GlTranslatef(Para os lados do terreno, Para cima e baixo, Para frente e tras);
     printf("carY:%f  carZ:%f  carX:%f \n", carY, carZ, carX);
     // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
@@ -356,19 +355,19 @@ void specialKeys(int key, int x, int y) {
     switch (key) {
     case GLUT_KEY_LEFT:
         cameraX -= 0.1f;
-        direcao = 0;
+        direcaoMovimento = 0;
         break;
     case GLUT_KEY_RIGHT:
         cameraX += 0.1f;
-        direcao = 0;
+        direcaoMovimento = 0;
         break;
     case GLUT_KEY_UP:
         cameraY += 0.1f;
-        direcao = 0;
+        direcaoMovimento = 0;
         break;
     case GLUT_KEY_DOWN:
         cameraY -= 0.1f;
-        direcao = 0;
+        direcaoMovimento = 0;
         break;
     }
     glutPostRedisplay();
@@ -379,19 +378,21 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
         case 's':
         case 'S':
             carX -= 0.1f;
-            direcao = -1;
+            direcaoMovimento = -1;
             break;
         case 'w':
         case 'W':
             carX += 0.1f;
-            direcao = 1;
+            direcaoMovimento = 1;
             break;
         case 'a':
         case 'A':
+            direcaoMovimento = 0;
             carY += 0.1f;
             break;
         case 'd':
         case 'D':
+            direcaoMovimento = 0;
             carY -= 0.1f;
             break;
     }
