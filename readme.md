@@ -9,7 +9,7 @@
 * Implementar a camera para seguir o carrinho (???)
   * Obs: Como se fosse uma "visão de terceira pessoa" em uma jogo.
 * Implementar a textura no carrinho (???)
-* Implementar a textura da malha (???)
+* Implementar a textura da malha (Jhon Jhon)
 * Arquitetar a malha para o carrinho (???)
   * Obs: Aumentar a malha e arquitetar montanhas e erosões no solo.
   * Obs: Fazer a malha parecendo que é o mundo de MADMAX.
