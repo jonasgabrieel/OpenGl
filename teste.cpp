@@ -12,11 +12,13 @@
 #include <SOIL/SOIL.h>
 
 
+
 // Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp -lSOIL
 // Para executar: ./teste
 
 
 // Para mover o carrinho aperte no botões W,A,S,D
+
 
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
@@ -26,7 +28,9 @@ float cameraY = 0.0f;
 float cameraZ = 3.0f;
 
 // Variáveis para armazenar a posição do carrinho
+
 float carX = 0.0f;
+
 float carY = 20.0f;
 float carZ = 0.0f;
 float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
@@ -40,7 +44,13 @@ int altura;
 const char* carrinhoPath = "carro.obj"; // Caminho para o arquivo OBJ do carrinho
 const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
 
+
 GLuint texName; // Variável para armazenar o nome da textura
+
+
+GLuint texName; // Variável para armazenar o nome da textura
+
+
 
 
 void loadSandTexture() {
@@ -131,6 +141,14 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
+void anguloDoCarrinho(){
+    // Futura movimentação que faz o carrinho inclinar para subir e descer em elevações do plano
+}
+
+void preverElevacao(){
+    // Função para prever se existe alguma elevação no caminho para o carrinho.
+}
+
 
 double distanciaEuclidiana(double x1, double y1, double x2, double y2) {
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
@@ -217,6 +235,7 @@ void renderModel(const aiScene* scene) {
         }
     }
     
+
     printf("carY:%f  carZ:%f  carX:%f \n", carY, carZ, carX);
     // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
@@ -441,9 +460,7 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
         case 's':
         case 'S':
             carX -= 0.1f;
-
             direcaoMovimento = -1;
-
             break;
         case 'w':
         case 'W':
@@ -453,6 +470,9 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
         case 'a':
         case 'A':
             direcaoMovimento = 0;
+            break;
+        case 'a':
+        case 'A':
             carY += 0.1f;
             break;
         case 'd':
