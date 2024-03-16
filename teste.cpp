@@ -313,7 +313,8 @@ void display() {
     // Cor de fundo (branco)
     glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
 
-
+    desenhar_luz();
+    
     // Configurar o material do carrinho
     GLfloat mat_ambient[] = {2.0f, 0.2f, 0.2f, 1.0f};
     GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 0.5f};
@@ -341,14 +342,14 @@ void display() {
 
     // Define a textura atual como a textura de areia
     glBindTexture(GL_TEXTURE_2D, texName);
-    desenhar_luz();
+    
 
     renderModel(scene);
     
 
     glutSwapBuffers();
-glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < 39; ++i) {
         for (int j = 0; j < 39; ++j) {
