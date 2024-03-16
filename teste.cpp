@@ -13,14 +13,15 @@
 // Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp
 // Para executar: ./teste
 
+
 // Para mover o carrinho aperte no botões W,A,S,D
 
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
-float cameraX = 0.0f;
-float cameraY = 40.0f;
-float cameraZ = 10.0f;
+float cameraX = -5.0f;
+float cameraY = 0.0f;
+float cameraZ = 3.0f;
 
 // Variáveis para armazenar a posição do carrinho
 float carX = 0.0f;
@@ -102,6 +103,7 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
+
 double distanciaEuclidiana(double x1, double y1, double x2, double y2) {
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
@@ -151,11 +153,9 @@ void renderModel(const aiScene* scene) {
     glPushMatrix(); // Inicie a matriz de transformação atual
     glPushAttrib(GL_CURRENT_BIT);
     glColor3f(0.0f,0.0f,1.0f);
-
     glTranslatef(carX, carY, carZ);
     glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
     glRotatef(90.0f, 0.0, 0.0 , 1.0f);
-
     // Aumenta o angulo do carro, e sobe um pouco no eixo Z. (Indo para frente em uma ladeira)
     if(direcaoMovimento == 1){
         if(preverElevacao(carX,carY)){
@@ -258,9 +258,15 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
+    // Ajusta a direção do olhar para a direção em que o carrinho está indo
+    float lookAtX = carX - cameraX; // Ajusta para trás do carrinho
+    float lookAtY = carY - cameraY; // Ajusta para lado do carrinho
+    float lookAtZ = carZ - cameraZ; // Mantém a posição Z do carrinho
 
-    // Configuração da câmera
-    gluLookAt(cameraX, cameraY, cameraZ, 10.0, 0.0, 6.0, 0.0, 0.0, 5.0);
+    // Configuração da câmera para simular o carrinho
+    gluLookAt(carX + cameraX, carY + cameraY, carZ + cameraZ, // Posição da câmera
+              lookAtX, lookAtY, lookAtZ, // Ponto para o qual a câmera está olhando
+              0.0, 0.0, 1.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -378,7 +384,9 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
         case 's':
         case 'S':
             carX -= 0.1f;
+
             direcaoMovimento = -1;
+
             break;
         case 'w':
         case 'W':
