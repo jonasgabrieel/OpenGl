@@ -10,16 +10,19 @@
 #include <iostream>
 #include <string>
 
+// Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp
+// Para executar: ./teste
+
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
-float cameraX = 0.0f;
-float cameraY = 40.0f;
-float cameraZ = 10.0f;
+float cameraX = -5.0f;
+float cameraY = 0.0f;
+float cameraZ = 3.0f;
 
 // Variáveis para armazenar a posição do carrinho
-float carX = 0.0f;
-float carY = 0.0f;
+float carX = 1.0f;
+float carY = 20.0f;
 float carZ = 0.0f;
 
 int** matrizImagem;
@@ -94,6 +97,14 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
+void anguloDoCarrinho(){
+    // Futura movimentação que faz o carrinho inclinar para subir e descer em elevações do plano
+}
+
+void preverElevacao(){
+    // Função para prever se existe alguma elevação no caminho para o carrinho.
+}
+
 
 
 void renderModel(const aiScene* scene) {
@@ -111,11 +122,13 @@ void renderModel(const aiScene* scene) {
     glPushMatrix(); // Inicie a matriz de transformação atual
     glPushAttrib(GL_CURRENT_BIT);
     glColor3f(0.0f,0.0f,1.0f);
+    glTranslatef(carX, carY, carZ);
     glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
     glRotatef(90.0f, 0.0, 0.0 , 1.0f);
+    
 
     // GlTranslatef(Para os lados do terreno, Para cima e baixo, Para frente e tras);
-    glTranslatef(20.0f, 1.0f, 6.0f);
+    printf("carY:%f  carZ:%f  carX:%f \n", carY, carZ, carX);
     // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
@@ -184,9 +197,15 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
+    // Ajusta a direção do olhar para a direção em que o carrinho está indo
+    float lookAtX = carX - cameraX; // Ajusta para trás do carrinho
+    float lookAtY = carY - cameraY; // Ajusta para lado do carrinho
+    float lookAtZ = carZ - cameraZ; // Mantém a posição Z do carrinho
 
-    // Configuração da câmera
-    gluLookAt(cameraX, cameraY, cameraZ, 10.0, 0.0, 6.0, 0.0, 0.0, 5.0);
+    // Configuração da câmera para simular o carrinho
+    gluLookAt(carX + cameraX, carY + cameraY, carZ + cameraZ, // Posição da câmera
+              lookAtX, lookAtY, lookAtZ, // Ponto para o qual a câmera está olhando
+              0.0, 0.0, 1.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -254,16 +273,16 @@ glEnd();
     //visualização dos eixos
 glBegin(GL_LINES);
     glColor3f (1.0, 0.0, 0.0);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(1.0, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, 1.0);
+    glVertex3f(1.0, 0.0, 1.0);
 
     glColor3f (0.0, 1.0, 0.0);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(0.0, 1.0, 0.0);
+    glVertex3f(0.0, 0.0, 1.0);
+    glVertex3f(0.0, 1.0, 1.0);
   
     glColor3f (0.0, 0.0, 1.0);
-    glVertex3f(0.0, 0.0, 0.0);
     glVertex3f(0.0, 0.0, 1.0);
+    glVertex3f(0.0, 0.0, 2.0);
 glEnd();
 
     glFlush();
@@ -295,6 +314,28 @@ void specialKeys(int key, int x, int y) {
     glutPostRedisplay();
 }
 
+void movimentaCarrinho(unsigned char key, int x, int y) {
+    switch (key) {
+        case 's':
+        case 'S':
+            carX -= 0.1f;
+            break;
+        case 'w':
+        case 'W':
+            carX += 0.1f;
+            break;
+        case 'a':
+        case 'A':
+            carY += 0.1f;
+            break;
+        case 'd':
+        case 'D':
+            carY -= 0.1f;
+            break;
+    }
+    glutPostRedisplay();
+}
+
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     matrizImagem = lerImagemPGM("imagem.ppm", &largura, &altura);
@@ -308,6 +349,7 @@ int main(int argc, char** argv) {
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutSpecialFunc(specialKeys);
+    glutKeyboardFunc(movimentaCarrinho);
 
     glutMainLoop();
     return 0;
