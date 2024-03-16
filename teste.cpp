@@ -12,7 +12,7 @@
 #include <SOIL/SOIL.h>
 
 
-// Aaa
+
 // Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp -lSOIL
 // Para executar: ./teste
 
