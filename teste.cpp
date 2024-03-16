@@ -9,6 +9,8 @@
 #include <assimp/postprocess.h>
 #include <iostream>
 #include <string>
+#include <SOIL/SOIL.h>
+
 
 // Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp
 // Para executar: ./teste
@@ -30,9 +32,35 @@ int largura;
 int altura;
 
 const char* carrinhoPath = "carro.obj"; // Caminho para o arquivo OBJ do carrinho
-const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo
+const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
+
+GLuint texName; // Variável para armazenar o nome da textura
 
 
+void loadSandTexture() {
+    // Carrega a imagem JPEG usando a SOIL
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image("solo.jpg", &width, &height, &channels, SOIL_LOAD_RGBA);
+    if (!image) {
+        std::cerr << "Erro ao carregar a imagem de areia." << std::endl;
+        return;
+    }
+    // Gera uma textura OpenGL
+    glGenTextures(1, &texName);
+    glBindTexture(GL_TEXTURE_2D, texName);
+
+    // Define os parâmetros de textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Carrega a imagem para a textura
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+    // Libera a memória alocada pela SOIL
+    SOIL_free_image_data(image);
+}
 void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
@@ -208,7 +236,8 @@ void display() {
               0.0, 0.0, 1.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
+
 
     // Configurar o material do carrinho
     GLfloat mat_ambient[] = {2.0f, 0.2f, 0.2f, 1.0f};
@@ -220,7 +249,7 @@ void display() {
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
+     
     // Definir a cor do carrinho
     glColor3f(1.0f, 0.0f, 0.0f); // Vermelho
 
@@ -228,45 +257,73 @@ void display() {
     glColor3f(0.0f, 0.0f, 0.5f);
      Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(carrinhoPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
-    
+
+    // Ativa o uso de textura
+    glEnable(GL_TEXTURE_2D);
+
+    // Configura o modo de combinação da textura (nesse caso, GL_REPLACE)
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    // Define a textura atual como a textura de areia
+    glBindTexture(GL_TEXTURE_2D, texName);
     desenhar_luz();
 
     renderModel(scene);
+    
 
     glutSwapBuffers();
+glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < 39; ++i) {
+        for (int j = 0; j < 39; ++j) {
+            // Coordenadas dos vértices dos triângulos
+            int x1 = i;
+            int y1 = j;
+            int x2 = i + 1;
+            int y2 = j;
+            int x3 = i;
+            int y3 = j + 1;
+            int x4 = i + 1;
+            int y4 = j + 1;
+            float z1 = matrizImagem[x1][y1];
+            float z2 = matrizImagem[x2][y2];
+            float z3 = matrizImagem[x3][y3];
+            float z4 = matrizImagem[x4][y4];
 
-glBegin(GL_LINES);
-for (int i = 0; i < 38; ++i) {
-    for (int j = 0; j < 38; ++j) {
-        // Coordenadas dos vértices dos triângulos
-        int x1 = i;
-        int y1 = j;
-        int x2 = i + 1;
-        int y2 = j;
-        int x3 = i + 1;
-        int y3 = j + 1;
-        float z1 = matrizImagem[x1][y1];
-        float z2 = matrizImagem[x2][y2];
-        float z3 = matrizImagem[x3][y3];
+            // Coordenadas de textura correspondentes aos vértices
+            float u1 = static_cast<float>(x1) / 39.0f;
+            float v1 = static_cast<float>(y1) / 39.0f;
+            float u2 = static_cast<float>(x2) / 39.0f;
+            float v2 = static_cast<float>(y2) / 39.0f;
+            float u3 = static_cast<float>(x3) / 39.0f;
+            float v3 = static_cast<float>(y3) / 39.0f;
+            float u4 = static_cast<float>(x4) / 39.0f;
+            float v4 = static_cast<float>(y4) / 39.0f;
 
-        // Desenhar as linhas das arestas dos triângulos
-        glVertex3f(x1, y1, z1);
-        glVertex3f(x2, y2, z2);
+            // Triângulo 1
+            glTexCoord2f(u1, v1);
+            glVertex3f(x1, y1, z1);
+            glTexCoord2f(u2, v2);
+            glVertex3f(x2, y2, z2);
+            glTexCoord2f(u3, v3);
+            glVertex3f(x3, y3, z3);
 
-        glVertex3f(x2, y2, z2);
-        glVertex3f(x3, y3, z3);
-
-        glVertex3f(x3, y3, z3);
-        glVertex3f(x1, y1, z1);
-        
-        // Desenhar linha do triângulo adjacente
-        glVertex3f(x1, y1, z1);
-        glVertex3f(x1, y1 + 1, matrizImagem[x1][y1 + 1]);
-        
-        glVertex3f(x1, y1 + 1, matrizImagem[x1][y1 + 1]);
-        glVertex3f(x3, y3, z3);
+            // Triângulo 2
+            glTexCoord2f(u2, v2);
+            glVertex3f(x2, y2, z2);
+            glTexCoord2f(u4, v4);
+            glVertex3f(x4, y4, z4);
+            glTexCoord2f(u3, v3);
+            glVertex3f(x3, y3, z3);
+        }
     }
-}
+    glEnd();
+// Desative o uso de textura após desenhar a malha
+    glDisable(GL_TEXTURE_2D);
+     // Troca o buffer de desenho com o buffer de exibição
+    glutSwapBuffers();
+
 glEnd();
 
 
@@ -345,6 +402,8 @@ int main(int argc, char** argv) {
     
     glEnable(GL_DEPTH_TEST);
     iluminar();
+    loadSandTexture();
+
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
