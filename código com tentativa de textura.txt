@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string>
 
+
+
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
