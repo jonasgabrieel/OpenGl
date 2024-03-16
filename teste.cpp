@@ -13,9 +13,14 @@
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
-float cameraX = 10.0f;
-float cameraY = 30.0f;
+float cameraX = 0.0f;
+float cameraY = 40.0f;
 float cameraZ = 10.0f;
+
+// Variáveis para armazenar a posição do carrinho
+float carX = 0.0f;
+float carY = 0.0f;
+float carZ = 0.0f;
 
 int** matrizImagem;
 int largura;
@@ -29,7 +34,7 @@ void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
    
-   GLfloat mat_diffuse[] = { 1.0, 1.0, 0.0, 1.0 };
+   GLfloat mat_diffuse[] = { 0.0, 1.0, 0.0, 1.0 };
    GLfloat mat_emission[] = { 1.0, 1.0, 0.0, 1.0 };
           
    //atribui características ao material
@@ -40,10 +45,12 @@ void desenhar_luz(){
     
    glPushMatrix();
    glTranslatef(luz_pontual[0],luz_pontual[1],luz_pontual[2]); 
+   glTranslatef(0.0, 0.0, 10.0); // Translada a esfera 2 unidades no eixo Z (aqui, estamos transladando-a para frente)
+
    
    glEnable(GL_LIGHTING);
    glColor3f (1.0, 1.0, 0.0);
-   glutSolidSphere(0.05,50,50);
+   glutSolidSphere(0.5,50,50);
    glDisable(GL_LIGHTING);
    
    glPopAttrib();
@@ -128,7 +135,6 @@ void renderModel(const aiScene* scene) {
 }
 
 
-
 int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
     FILE *arquivo;
     char tipo[3];
@@ -180,16 +186,16 @@ void display() {
 
 
     // Configuração da câmera
-    gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0);
+    gluLookAt(cameraX, cameraY, cameraZ, 10.0, 0.0, 6.0, 0.0, 0.0, 5.0);
 
     // Cor de fundo (branco)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Configurar o material do carrinho
-    GLfloat mat_ambient[] = {1.0f, 0.2f, 0.2f, 1.0f};
-    GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat mat_shininess[] = {100.0f};
+    GLfloat mat_ambient[] = {2.0f, 0.2f, 0.2f, 1.0f};
+    GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 0.5f};
+    GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 0.5f};
+    GLfloat mat_shininess[] = {50.0f};
 
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
@@ -298,7 +304,6 @@ int main(int argc, char** argv) {
     
     glEnable(GL_DEPTH_TEST);
     iluminar();
-
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
