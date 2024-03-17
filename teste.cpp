@@ -48,8 +48,6 @@ const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do mo
 GLuint texName; // Variável para armazenar o nome da textura
 
 
-GLuint texName; // Variável para armazenar o nome da textura
-
 
 
 
@@ -469,11 +467,8 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
             break;
         case 'a':
         case 'A':
-            direcaoMovimento = 0;
-            break;
-        case 'a':
-        case 'A':
             carY += 0.1f;
+            direcaoMovimento = 0;
             break;
         case 'd':
         case 'D':
