@@ -41,7 +41,7 @@ int** matrizImagem;
 int largura;
 int altura;
 
-const char* carrinhoPath = "carro.obj"; // Caminho para o arquivo OBJ do carrinho
+const char* carrinhoPath = "carrinho.obj"; // Caminho para o arquivo OBJ do carrinho
 const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
 
 
