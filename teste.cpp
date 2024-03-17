@@ -47,36 +47,7 @@ const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do mo
 
 GLuint texName; // Variável para armazenar o nome da textura
 
-/*-----------------Carrega textura do Carro---------------------*/
 
-GLuint texNameCarrinho; // Variável para armazenar o nome da textura do carrinho
-
-void loadCarTexture() {
-    // Carrega a imagem da textura do carrinho usando a SOIL
-    int width, height, channels;
-    unsigned char* image = SOIL_load_image("texturaCar.png", &width, &height, &channels, SOIL_LOAD_RGBA);
-    if (!image) {
-        std::cerr << "Erro ao carregar a imagem da textura do carrinho." << std::endl;
-        return;
-    }
-    // Gera uma textura OpenGL
-    glGenTextures(1, &texNameCarrinho);
-    glBindTexture(GL_TEXTURE_2D, texNameCarrinho);
-
-    // Define os parâmetros de textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Carrega a imagem para a textura
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-    // Libera a memória alocada pela SOIL
-    SOIL_free_image_data(image);
-}
-
-/*--------------------------------------------------------------*/
 void loadSandTexture() {
     // Carrega a imagem JPEG usando a SOIL
     int width, height, channels;
@@ -218,76 +189,66 @@ void renderModel(const aiScene* scene) {
         return;
     }
 
-    // Defina o ângulo de rotação para rotacionar o carrinho 90 graus em torno do eixo Y
-    float anguloRotacao = 90.0f;
+    float anguloRotacao = 90.0f; // Rotacionar o carrinho 90 graus em torno do eixo verde (Y)
 
-    // Inicie a matriz de transformação atual
-    glPushMatrix();
+    glPushMatrix(); // Inicie a matriz de transformação atual
     glPushAttrib(GL_CURRENT_BIT);
-    glColor3f(0.0f, 0.0f, 1.0f); // Defina a cor do carrinho
-
-    // Translação e rotação do carrinho
+    glColor3f(0.0f,0.0f,1.0f);
     glTranslatef(carX, carY, carZ);
     glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
-    glRotatef(90.0f, 0.0, 0.0, 1.0f);
-
-    // Aumenta o ângulo do carro e sobe um pouco no eixo Z se estiver indo para frente em uma ladeira
-    if (direcaoMovimento == 1) {
-        if (preverElevacao(carX, carY)) {
+    glRotatef(90.0f, 0.0, 0.0 , 1.0f);
+    // Aumenta o angulo do carro, e sobe um pouco no eixo Z. (Indo para frente em uma ladeira)
+    if(direcaoMovimento == 1){
+        if(preverElevacao(carX,carY)){
             distanciaLadeira -= 0.1;
             angulo += 1.875f;
             carZ += 0.042f;
             glRotatef(-angulo, 1.0f, 0.0, 0.0);
-        } else {
-            distanciaLadeira -= 0.1;
+        }else{
+            distanciaLadeira -=0.1;
         }
-    } else {
-        // Diminui o ângulo do carro se estiver voltando para trás em uma ladeira
-        if (direcaoMovimento == -1) {
-            if (preverElevacao(carX, carY)) {
-                if (angulo == 0) {
+    }else{
+        // Diminui o angulo do carro (Voltando para tras em uma ladeira)
+        if(direcaoMovimento == -1){
+            if(preverElevacao(carX,carY)){
+                if(angulo == 0){
                     angulo = 45.0f;
                     carZ -= 0.042f;
-                    glRotatef(-angulo, 1.0f, 0.0f, 0.0f);
-                } else {
+                    glRotatef(-angulo,1.0f,0.0f,0.0f);
+                }else{
                     distanciaLadeira += 0.1;
                     angulo -= 1.875f;
                     carZ -= 0.042f;
-                    glRotatef(-angulo, 1.0f, 0.0f, 0.0f);
+                    glRotatef(-angulo,1.0f,0.0f,0.0f);
                 }
             }
-        } else {
-            // Não realize nenhuma alteração no ângulo se estiver movendo a câmera ou indo para os lados
-            if (direcaoMovimento == 0) {
-                glRotatef(-angulo, 1.0f, 0.0f, 0.0f);
+        }else{
+            // Não realizar nenhum alteração no angulo. (Quando for movimentar a camera ou ir para os lados)
+            if(direcaoMovimento == 0){
+                glRotatef(-angulo,1.0f,0.0f,0.0f);
             }
         }
     }
+    
 
-    // Carro
-    glBindTexture(GL_TEXTURE_2D, texNameCarrinho); // Use a textura do carro
-
-    // Aplicar as coordenadas de textura do modelo do carro
-    glBegin(GL_TRIANGLES);
+    printf("carY:%f  carZ:%f  carX:%f \n", carY, carZ, carX);
+    // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
+        glBegin(GL_TRIANGLES);
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
             const aiFace& face = mesh->mFaces[j];
             for (unsigned int k = 0; k < face.mNumIndices; ++k) {
                 unsigned int index = face.mIndices[k];
                 const aiVector3D& vertex = mesh->mVertices[index];
-                const aiVector3D& uv = mesh->mTextureCoords[0][index]; // Coordenadas de textura do modelo
-                glTexCoord2f(uv.x, uv.y); // Aplica as coordenadas de textura do modelo do carro
                 glVertex3f(vertex.x * scaleFactor, vertex.y * scaleFactor, vertex.z * scaleFactor);
             }
         }
+        glEnd();
     }
-    glEnd();
-
     glPopAttrib();
     glPopMatrix(); // Restaure a matriz de transformação anterior
 }
-
 
 
 int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
@@ -368,8 +329,6 @@ void display() {
     // Definir a cor do carrinho
     glColor3f(1.0f, 0.0f, 0.0f); // Vermelho
 
-    
-
     // Cor das arestas dos triângulos (azul escuro)
     glColor3f(0.0f, 0.0f, 0.5f);
      Assimp::Importer importer;
@@ -391,7 +350,6 @@ void display() {
     glutSwapBuffers();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBindTexture(GL_TEXTURE_2D, texName); // Aplica textura do terreno
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < 39; ++i) {
         for (int j = 0; j < 39; ++j) {
@@ -529,8 +487,6 @@ int main(int argc, char** argv) {
     glEnable(GL_DEPTH_TEST);
     iluminar();
     loadSandTexture();
-
-    loadCarTexture();
 
 
     glutDisplayFunc(display);
