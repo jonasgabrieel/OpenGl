@@ -29,7 +29,7 @@ float cameraZ = 3.0f;
 
 // Variáveis para armazenar a posição do carrinho
 
-float carX = 3.0f;
+float carX = 5.0f;
 float carY = 20.0f;
 float carZ = 0.0f;
 float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
@@ -217,7 +217,6 @@ void renderModel(const aiScene* scene) {
     // Inicie a matriz de transformação atual
     glPushMatrix();
     glPushAttrib(GL_CURRENT_BIT);
-    glColor3f(0.0f, 0.0f, 1.0f); // Defina a cor do carrinho
 
     // Translação e rotação do carrinho
     printf("Direcao:%d\n", direcaoMovimento);
@@ -427,7 +426,7 @@ void display() {
     // Configuração da câmera para simular o carrinho
     gluLookAt(carX + cameraX, carY + cameraY, carZ + cameraZ, // Posição da câmera
               lookAtX, lookAtY, lookAtZ, // Ponto para o qual a câmera está olhando
-              0.0, 0.0, 1.0); // Vetor "para cima"
+              0.0, 0.0, 2.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
     glClearColor(0.0f, 0.7f, 1.0f, 1.0f); // Azul ligeiramente mais escuro
@@ -444,11 +443,7 @@ void display() {
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-     
-    // Definir a cor do carrinho
-    glColor3f(1.0f, 0.0f, 0.0f); // Vermelho
-
-    
+      
 
     // Cor das arestas dos triângulos (azul escuro)
     glColor3f(0.0f, 0.0f, 0.5f);
@@ -490,14 +485,14 @@ void display() {
             float z4 = matrizImagem[x4][y4];
 
             // Coordenadas de textura correspondentes aos vértices
-            float u1 = static_cast<float>(x1) / 39.0f;
-            float v1 = static_cast<float>(y1) / 39.0f;
-            float u2 = static_cast<float>(x2) / 39.0f;
-            float v2 = static_cast<float>(y2) / 39.0f;
-            float u3 = static_cast<float>(x3) / 39.0f;
-            float v3 = static_cast<float>(y3) / 39.0f;
-            float u4 = static_cast<float>(x4) / 39.0f;
-            float v4 = static_cast<float>(y4) / 39.0f;
+            float u1 = static_cast<float>(x1) / 79.0f;
+            float v1 = static_cast<float>(y1) / 79.0f;
+            float u2 = static_cast<float>(x2) / 79.0f;
+            float v2 = static_cast<float>(y2) / 79.0f;
+            float u3 = static_cast<float>(x3) / 79.0f;
+            float v3 = static_cast<float>(y3) / 79.0f;
+            float u4 = static_cast<float>(x4) / 79.0f;
+            float v4 = static_cast<float>(y4) / 79.0f;
 
             // Triângulo 1
             glTexCoord2f(u1, v1);
@@ -618,7 +613,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     matrizImagem = lerImagemPGM("imagem.ppm", &largura, &altura);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-    glutInitWindowSize(500, 500);
+    glutInitWindowSize(800, 800);
     glutCreateWindow("Malha de Triângulos Vazados OpenGL");
     
     glEnable(GL_DEPTH_TEST);
