@@ -15,7 +15,7 @@
 
 
 
-// Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp -lSOIL
+// Para compilar: g++ teste.cpp -o teste -lassimp -lGL -lGLU -lglut -lSOIL -lSDL2 -lSDL2_mixer
 // Para executar: ./teste
 
 
