@@ -191,7 +191,7 @@ void preverElevacao(int x, int y, int i, int j, int os){
 int preverObstaculo(int x, int y, int i, int j){
     int linha = x + i;
     int coluna = y + j;
-    if((linha > 39 || linha < 0) || (coluna > 39 || coluna < 0)){
+    if((linha > 79 || linha < 0) || (coluna > 39 || coluna < 0)){
         printf("tem obstaculo\n");
         return 0;
     }else{
@@ -474,7 +474,7 @@ void display() {
     glBindTexture(GL_TEXTURE_2D, texName); // Aplica textura do terreno
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < 39; ++i) {
-        for (int j = 0; j < 39; ++j) {
+        for (int j = 0; j < 79; ++j) {
             // Coordenadas dos vértices dos triângulos
             int x1 = i;
             int y1 = j;
