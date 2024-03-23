@@ -164,48 +164,42 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
-void anguloDoCarrinho(){
-    // Futura movimentação que faz o carrinho inclinar para subir e descer em elevações do plano
-}
-
-void preverElevacao(){
-    // Função para prever se existe alguma elevação no caminho para o carrinho.
-}
-
 
 double distanciaEuclidiana(double x1, double y1, double x2, double y2) {
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
-// Função que prever alguma elevação no terreno e sinalizar quando estiver perto
-int preverElevacao(float x, float y){
-    int intX = x;
-    int intY = y;
-    printf("%d, %d %lf\n", matrizImagem[intX+3][intY], matrizImagem[intX][intY], distanciaLadeira);
-    if (distanciaLadeira > 0.09){
-        if(distanciaLadeira <= 2.4){
-            return 1;
-        }else{
-            return 0;
-        }
+void preverElevacao(int x, int y, int i, int j, int os){
+    int linha = x + i;
+    int coluna = y + j;
+    printf("%d %d\n", linha, coluna);
+    if(matrizImagem[linha][coluna] - matrizImagem[x][y] == 1 ){
+        printf("ladeira\n");
+        carZ += 1.0;
+        carX += i;
+        carY += j;
     }else{
-        for(int i=1; i <= 3; i++){
-            angulo = 0.0f;
-            if(matrizImagem[intX+i][intY] != matrizImagem[intX][intY]){
-                printf("tem ladeira\n");
-                distanciaLadeira = distanciaEuclidiana(intX+i,intY, intX, intY)-0.0;
-                if(distanciaLadeira == 1){
-                    angulo = 25.956f;
-                }
-                if(distanciaLadeira == 2){
-                    angulo = 7.416f;
-                }
-                return 1;
-            }
+        if(matrizImagem[linha][coluna] - matrizImagem[x][y] == -1){
+            carZ -= 1.0;
+            carX += i;
+            carY += j;
+            printf("depressao\n");
         }
-        carZ = matrizImagem[intX][intY];
-        angulo = 0.0f;
+    }
+}
+
+int preverObstaculo(int x, int y, int i, int j){
+    int linha = x + i;
+    int coluna = y + j;
+    if((linha > 39 || linha < 0) || (coluna > 39 || coluna < 0)){
+        printf("tem obstaculo\n");
         return 0;
+    }else{
+        if( (matrizImagem[linha][coluna] - matrizImagem[x][y] > 1 || matrizImagem[linha][coluna] - matrizImagem[x][y] < -1)){
+            return 0;
+        }else{
+            return 1;
+        }
     }
 }
 
@@ -226,40 +220,113 @@ void renderModel(const aiScene* scene) {
     glColor3f(0.0f, 0.0f, 1.0f); // Defina a cor do carrinho
 
     // Translação e rotação do carrinho
-    glTranslatef(carX, carY, carZ);
-    glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
-    glRotatef(90.0f, 0.0, 0.0, 1.0f);
-
-    // Aumenta o ângulo do carro e sobe um pouco no eixo Z se estiver indo para frente em uma ladeira
-    if (direcaoMovimento == 1) {
-        if (preverElevacao(carX, carY)) {
-            distanciaLadeira -= 0.1;
-            angulo += 1.875f;
-            carZ += 0.042f;
-            glRotatef(-angulo, 1.0f, 0.0, 0.0);
-        } else {
-            distanciaLadeira -= 0.1;
+    printf("Direcao:%d\n", direcaoMovimento);
+    int x = carX;
+    int y = carY;
+    if(direcaoMovimento == 1){
+        if(preverObstaculo(carX+1,carY, 1, 0) ){
+            carX += 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, 1, 0, 1);  
+        }else{
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
         }
-    } else {
-        // Diminui o ângulo do carro se estiver voltando para trás em uma ladeira
-        if (direcaoMovimento == -1) {
-            if (preverElevacao(carX, carY)) {
-                if (angulo == 0) {
-                    angulo = 45.0f;
-                    carZ -= 0.042f;
-                    glRotatef(-angulo, 1.0f, 0.0f, 0.0f);
-                } else {
-                    distanciaLadeira += 0.1;
-                    angulo -= 1.875f;
-                    carZ -= 0.042f;
-                    glRotatef(-angulo, 1.0f, 0.0f, 0.0f);
-                }
-            }
-        } else {
-            // Não realize nenhuma alteração no ângulo se estiver movendo a câmera ou indo para os lados
-            if (direcaoMovimento == 0) {
-                glRotatef(-angulo, 1.0f, 0.0f, 0.0f);
-            }
+    }
+    if(direcaoMovimento == 2){
+        if(preverObstaculo(carX-1,carY, -1, 0)){
+            carX -= 1;
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, -1, 0, 2);
+        }else{
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);  
+        }
+    }
+    if(direcaoMovimento == 3 ){
+        if(preverObstaculo(carX,carY+1, 0, 1)){
+            carY += 1;
+            glTranslatef(carX, carY, carZ);
+            glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(180.0f, 0.0, 0.0 , 1.0f);
+            preverElevacao(carX,carY,0,1, 3);
+        }else{
+           glTranslatef(carX, carY, carZ);
+            glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(180.0f, 0.0, 0.0 , 1.0f); 
+        }
+    }
+    if(direcaoMovimento == 4){
+        if(preverObstaculo(carX,carY-1, 0, -1)){
+            carY -= 1;
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            preverElevacao(carX, carY, 0, -1, 4);  
+        }else{
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f); 
+        }
+    }
+    if(direcaoMovimento == 5){
+        if(preverObstaculo(carX+1,carY+1, 1, 1)){
+            carX += 1;
+            carY += 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(135.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, 1, 1, 5); 
+        }else{
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(135.0f, 0.0f, 1.0f, 0.0f); 
+        }
+    }
+    if(direcaoMovimento == 6){
+        if(preverObstaculo(carX+1,carY-1, 1, -1)){
+            carX += 1;
+            carY -= 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, 1, -1, 6);
+        }else{
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(45.0f, 0.0f, 1.0f, 0.0f);  
+        }
+    }
+    if(direcaoMovimento == 7){
+        if(preverObstaculo(carX-1,carY+1, -1, 1)){
+            carX -= 1;
+            carY += 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-135.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, -1, 1, 7);
+        }else{
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-135.0f, 0.0f, 1.0f, 0.0f);  
+        }
+    }
+    if(direcaoMovimento == 8){
+        if(preverObstaculo(carX-1,carY-1, -1, -1)){
+            carX -= 1;
+            carY -= 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, -1, -1, 8); 
+        }else{
+           glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-45.0f, 0.0f, 1.0f, 0.0f); 
         }
     }
 
@@ -488,19 +555,15 @@ void specialKeys(int key, int x, int y) {
     switch (key) {
     case GLUT_KEY_LEFT:
         cameraX -= 0.1f;
-        direcaoMovimento = 0;
         break;
     case GLUT_KEY_RIGHT:
         cameraX += 0.1f;
-        direcaoMovimento = 0;
         break;
     case GLUT_KEY_UP:
         cameraY += 0.1f;
-        direcaoMovimento = 0;
         break;
     case GLUT_KEY_DOWN:
         cameraY -= 0.1f;
-        direcaoMovimento = 0;
         break;
     }
     glutPostRedisplay();
@@ -508,28 +571,47 @@ void specialKeys(int key, int x, int y) {
 
 void movimentaCarrinho(unsigned char key, int x, int y) {
     switch (key) {
-        case 's':
-        case 'S':
-            carX -= 0.1f;
-            direcaoMovimento = -1;
+        case 'x':
+        case 'X':
+            direcaoMovimento = 2;
+            glutPostRedisplay();
             break;
         case 'w':
         case 'W':
-            carX += 0.1f;
             direcaoMovimento = 1;
+            glutPostRedisplay();
             break;
         case 'a':
         case 'A':
-            carY += 0.1f;
-            direcaoMovimento = 0;
+            direcaoMovimento = 3;
+            glutPostRedisplay();
             break;
         case 'd':
         case 'D':
-            direcaoMovimento = 0;
-            carY -= 0.1f;
+            direcaoMovimento = 4;
+            glutPostRedisplay();
+            break;
+        case 'q':
+        case 'Q':
+            direcaoMovimento = 5;
+            glutPostRedisplay();
+            break;
+        case 'e':
+        case 'E':
+            direcaoMovimento = 6;
+            glutPostRedisplay();
+            break;
+        case 'z':
+        case 'Z':
+            direcaoMovimento = 7;
+            glutPostRedisplay();
+            break;
+        case 'c':
+        case 'C':
+            direcaoMovimento = 8;
+            glutPostRedisplay();
             break;
     }
-    glutPostRedisplay();
 }
 
 int main(int argc, char** argv) {
