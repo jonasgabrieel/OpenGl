@@ -333,6 +333,16 @@ int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
     return matriz;
 }
 
+// Função para liberar a memória alocada para a matriz
+void liberarMatriz(int** matriz, int altura) {
+    if (matriz != NULL) {
+        for (int i = 0; i < altura; ++i) {
+            free(matriz[i]);
+        }
+        free(matriz);
+    }
+}
+
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -538,5 +548,7 @@ int main(int argc, char** argv) {
     glutKeyboardFunc(movimentaCarrinho);
 
     glutMainLoop();
+    // Libera a memória alocada para a matriz
+    liberarMatriz(matrizImagem, altura);
     return 0;
 }
