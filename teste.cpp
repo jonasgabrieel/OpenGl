@@ -23,14 +23,13 @@
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3,0.5, 0.5, 1.0 };
 
-float cameraX = -5.0f;
+float cameraX = -8.0f;
 float cameraY = 0.0f;
 float cameraZ = 3.0f;
 
 // Variáveis para armazenar a posição do carrinho
 
-float carX = 0.0f;
-
+float carX = 3.0f;
 float carY = 20.0f;
 float carZ = 0.0f;
 float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
