@@ -104,8 +104,8 @@ void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
    
-   GLfloat mat_diffuse[] = { 0.0, 1.0, 0.0, 1.0 };
-   GLfloat mat_emission[] = { 1.0, 1.0, 0.0, 1.0 };
+   GLfloat mat_diffuse[] = { 0.0, 3.0, 0.0, 1.0 };
+   GLfloat mat_emission[] = { 3.0, 3.0, 0.0, 1.0 };
           
    //atribui características ao material
    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
@@ -137,7 +137,7 @@ void iluminar(){
    //define características a serem associadas à fonte de luz 0	
    //fonte de luz direcional (por que a coordenada homogênea w == 0?)
    GLfloat light0_position[] = { 0.0, 1.0, 0.0, 0.0 };
-   GLfloat light0_diffuse[] = { 0.1, 0.1, 0.1, 1.0 };
+   GLfloat light0_diffuse[] = { 0.3, 0.3, 0.3, 1.0 };
    
    //atribui características para a fonte de luz 0
    //cor padrão: branco
@@ -148,9 +148,9 @@ void iluminar(){
    
    //fonte de luz pontual (por que a coordenada homogênea w == 1?)
    //define características a serem associadas à fonte de luz 1	
-   GLfloat light1_diffuse[] = { 0.6, 0.6, 0.6, 1.0 };
+   GLfloat light1_diffuse[] = { 0.3, 0.3, 0.3, 1.0 };
    GLfloat light1_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-   GLfloat light1_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+   GLfloat light1_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
    
    //atribui as características para a fonte de luz 1
    //(experimentem remover alguns dos componentes abaixo)
@@ -344,6 +344,7 @@ void liberarMatriz(int** matriz, int altura) {
 }
 
 
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -362,7 +363,7 @@ void display() {
               0.0, 0.0, 1.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
-    glClearColor(0.0f, 0.0f, 0.9f, 0.0f);
+    glClearColor(0.0f, 0.7f, 1.0f, 1.0f); // Azul ligeiramente mais escuro
 
     desenhar_luz();
     
@@ -541,7 +542,6 @@ int main(int argc, char** argv) {
     glEnable(GL_DEPTH_TEST);
     iluminar();
     loadSandTexture();
-
     loadCarTexture();
 
 
