@@ -1,0 +1,16 @@
+# Arquivos de compilação
+*.o
+*.out
+*.exe
+
+# Arquivos gerados pelo sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de dependências gerados
+/build/
+/dist/
+/node_modules/
+/vendor/
+
+teste.txt

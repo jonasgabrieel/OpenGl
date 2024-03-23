@@ -8,7 +8,7 @@
   * O carrinho deve rotacionar de acordo com a direção.
 * Implementar a camera para seguir o carrinho (Olive)
   * Obs: Como se fosse uma "visão de terceira pessoa" em uma jogo.
-* Implementar a textura no carrinho (???)
+* Implementar a textura no carrinho (Jeferson)
 * Implementar a textura da malha (Jhon Jhon)
 * Arquitetar a malha para o carrinho (???)
   * Obs: Aumentar a malha e arquitetar montanhas e erosões no solo.

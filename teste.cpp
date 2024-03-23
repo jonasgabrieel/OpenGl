@@ -9,40 +9,103 @@
 #include <assimp/postprocess.h>
 #include <iostream>
 #include <string>
+#include <SOIL/SOIL.h>
 
-// Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp
+
+
+// Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp -lSOIL
 // Para executar: ./teste
+
 
 // Para mover o carrinho aperte no botões W,A,S,D
 
-#define MAX_DIMENSION 1000
-GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
-double cameraX = 10.0f;
-double cameraY = 60.0f;
-double cameraZ = 10.0f;
+#define MAX_DIMENSION 1000
+GLfloat luz_pontual[] = {0.3,0.5, 0.5, 1.0 };
+
+float cameraX = -8.0f;
+float cameraY = 0.0f;
+float cameraZ = 3.0f;
 
 // Variáveis para armazenar a posição do carrinho
-int carX = 0.0f;
-int carY = 20.0f;
-int carZ = 0.0f;
+
+float carX = 3.0f;
+float carY = 20.0f;
+float carZ = 0.0f;
 float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
-int direcaoMovimento = 1; // Variável para definir se o carrinho está indo ou voltando
+int direcaoMovimento = 0; // Variável para definir se o carrinho está indo ou voltando
+float distanciaLadeira = 0; // Variável para definir a distancia do carro para a ladeira proxima.
 
 int** matrizImagem;
 int largura;
 int altura;
 
-const char* carrinhoPath = "carro.obj"; // Caminho para o arquivo OBJ do carrinho
-const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo
+const char* carrinhoPath = "carrinho.obj"; // Caminho para o arquivo OBJ do carrinho
+const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
 
 
+GLuint texName; // Variável para armazenar o nome da textura
+
+/*-----------------Carrega textura do Carro---------------------*/
+
+GLuint texNameCarrinho; // Variável para armazenar o nome da textura do carrinho
+
+void loadCarTexture() {
+    // Carrega a imagem da textura do carrinho usando a SOIL
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image("texturaCar.png", &width, &height, &channels, SOIL_LOAD_RGBA);
+    if (!image) {
+        std::cerr << "Erro ao carregar a imagem da textura do carrinho." << std::endl;
+        return;
+    }
+    // Gera uma textura OpenGL
+    glGenTextures(1, &texNameCarrinho);
+    glBindTexture(GL_TEXTURE_2D, texNameCarrinho);
+
+    // Define os parâmetros de textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Carrega a imagem para a textura
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+    // Libera a memória alocada pela SOIL
+    SOIL_free_image_data(image);
+}
+
+/*--------------------------------------------------------------*/
+void loadSandTexture() {
+    // Carrega a imagem JPEG usando a SOIL
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image("solo.jpg", &width, &height, &channels, SOIL_LOAD_RGBA);
+    if (!image) {
+        std::cerr << "Erro ao carregar a imagem de areia." << std::endl;
+        return;
+    }
+    // Gera uma textura OpenGL
+    glGenTextures(1, &texName);
+    glBindTexture(GL_TEXTURE_2D, texName);
+
+    // Define os parâmetros de textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Carrega a imagem para a textura
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+    // Libera a memória alocada pela SOIL
+    SOIL_free_image_data(image);
+}
 void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
    
-   GLfloat mat_diffuse[] = { 0.0, 1.0, 0.0, 1.0 };
-   GLfloat mat_emission[] = { 1.0, 1.0, 0.0, 1.0 };
+   GLfloat mat_diffuse[] = { 0.0, 3.0, 0.0, 1.0 };
+   GLfloat mat_emission[] = { 3.0, 3.0, 0.0, 1.0 };
           
    //atribui características ao material
    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
@@ -57,7 +120,7 @@ void desenhar_luz(){
    
    glEnable(GL_LIGHTING);
    glColor3f (1.0, 1.0, 0.0);
-   glutSolidSphere(0.5,50,50);
+   glutSolidSphere(2.0,50,50);
    glDisable(GL_LIGHTING);
    
    glPopAttrib();
@@ -74,7 +137,7 @@ void iluminar(){
    //define características a serem associadas à fonte de luz 0	
    //fonte de luz direcional (por que a coordenada homogênea w == 0?)
    GLfloat light0_position[] = { 0.0, 1.0, 0.0, 0.0 };
-   GLfloat light0_diffuse[] = { 0.1, 0.1, 0.1, 1.0 };
+   GLfloat light0_diffuse[] = { 0.3, 0.3, 0.3, 1.0 };
    
    //atribui características para a fonte de luz 0
    //cor padrão: branco
@@ -85,9 +148,9 @@ void iluminar(){
    
    //fonte de luz pontual (por que a coordenada homogênea w == 1?)
    //define características a serem associadas à fonte de luz 1	
-   GLfloat light1_diffuse[] = { 0.6, 0.6, 0.6, 1.0 };
+   GLfloat light1_diffuse[] = { 0.3, 0.3, 0.3, 1.0 };
    GLfloat light1_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-   GLfloat light1_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+   GLfloat light1_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
    
    //atribui as características para a fonte de luz 1
    //(experimentem remover alguns dos componentes abaixo)
@@ -101,11 +164,11 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
+
 double distanciaEuclidiana(double x1, double y1, double x2, double y2) {
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
-// Função que prever alguma elevação no terreno e sinalizar quando estiver perto
 void preverElevacao(int x, int y, int i, int j, int os){
     int linha = x + i;
     int coluna = y + j;
@@ -143,16 +206,20 @@ int preverObstaculo(int x, int y, int i, int j){
 
 
 void renderModel(const aiScene* scene) {
-    glClear(GL_COLOR_BUFFER_BIT);
     if (!scene) {
         std::cerr << "Erro ao carregar o modelo do carrinho." << std::endl;
         return;
     }
 
-    glPushMatrix(); // Inicie a matriz de transformação atual
-    glPushAttrib(GL_CURRENT_BIT);
-    glColor3f(0.0f,1.0f,1.0f);
+    // Defina o ângulo de rotação para rotacionar o carrinho 90 graus em torno do eixo Y
+    float anguloRotacao = 90.0f;
 
+    // Inicie a matriz de transformação atual
+    glPushMatrix();
+    glPushAttrib(GL_CURRENT_BIT);
+    glColor3f(0.0f, 0.0f, 1.0f); // Defina a cor do carrinho
+
+    // Translação e rotação do carrinho
     printf("Direcao:%d\n", direcaoMovimento);
     int x = carX;
     int y = carY;
@@ -262,26 +329,31 @@ void renderModel(const aiScene* scene) {
             glRotatef(-45.0f, 0.0f, 1.0f, 0.0f); 
         }
     }
-    
-    printf("carY:%d  carZ:%d  carX:%d \n", carY, carZ, carX);
-    // Renderize o modelo do carrinho
+
+    // Carro
+    glBindTexture(GL_TEXTURE_2D, texNameCarrinho); // Use a textura do carro
+
+    // Aplicar as coordenadas de textura do modelo do carro
+    glBegin(GL_TRIANGLES);
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
-        glBegin(GL_TRIANGLES);
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
             const aiFace& face = mesh->mFaces[j];
             for (unsigned int k = 0; k < face.mNumIndices; ++k) {
                 unsigned int index = face.mIndices[k];
                 const aiVector3D& vertex = mesh->mVertices[index];
+                const aiVector3D& uv = mesh->mTextureCoords[0][index]; // Coordenadas de textura do modelo
+                glTexCoord2f(uv.x, uv.y); // Aplica as coordenadas de textura do modelo do carro
                 glVertex3f(vertex.x * scaleFactor, vertex.y * scaleFactor, vertex.z * scaleFactor);
             }
         }
-        glEnd();
     }
+    glEnd();
+
     glPopAttrib();
     glPopMatrix(); // Restaure a matriz de transformação anterior
-    glFlush();
 }
+
 
 
 int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
@@ -328,18 +400,40 @@ int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
     return matriz;
 }
 
+// Função para liberar a memória alocada para a matriz
+void liberarMatriz(int** matriz, int altura) {
+    if (matriz != NULL) {
+        for (int i = 0; i < altura; ++i) {
+            free(matriz[i]);
+        }
+        free(matriz);
+    }
+}
+
+
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+    // Habilita o culling de faces só renderiza o que for visivél para o usuário
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
+    // Ajusta a direção do olhar para a direção em que o carrinho está indo
+    float lookAtX = carX - cameraX; // Ajusta para trás do carrinho
+    float lookAtY = carY - cameraY; // Ajusta para lado do carrinho
+    float lookAtZ = carZ - cameraZ; // Mantém a posição Z do carrinho
 
-    // Configuração da câmera
-    gluLookAt(cameraX, cameraY, cameraZ, 10.0, 0.0, 6.0, 0.0, 0.0, 5.0);
+    // Configuração da câmera para simular o carrinho
+    gluLookAt(carX + cameraX, carY + cameraY, carZ + cameraZ, // Posição da câmera
+              lookAtX, lookAtY, lookAtZ, // Ponto para o qual a câmera está olhando
+              0.0, 0.0, 1.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.7f, 1.0f, 1.0f); // Azul ligeiramente mais escuro
 
+    desenhar_luz();
+    
     // Configurar o material do carrinho
     GLfloat mat_ambient[] = {2.0f, 0.2f, 0.2f, 1.0f};
     GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 0.5f};
@@ -350,53 +444,84 @@ void display() {
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
+     
     // Definir a cor do carrinho
     glColor3f(1.0f, 0.0f, 0.0f); // Vermelho
+
+    
 
     // Cor das arestas dos triângulos (azul escuro)
     glColor3f(0.0f, 0.0f, 0.5f);
      Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(carrinhoPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+
+    // Ativa o uso de textura
+    glEnable(GL_TEXTURE_2D);
+
+    // Configura o modo de combinação da textura (nesse caso, GL_REPLACE)
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    // Define a textura atual como a textura de areia
+    glBindTexture(GL_TEXTURE_2D, texName);
     
-    desenhar_luz();
 
     renderModel(scene);
+    
 
     glutSwapBuffers();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBindTexture(GL_TEXTURE_2D, texName); // Aplica textura do terreno
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < 39; ++i) {
+        for (int j = 0; j < 39; ++j) {
+            // Coordenadas dos vértices dos triângulos
+            int x1 = i;
+            int y1 = j;
+            int x2 = i + 1;
+            int y2 = j;
+            int x3 = i;
+            int y3 = j + 1;
+            int x4 = i + 1;
+            int y4 = j + 1;
+            float z1 = matrizImagem[x1][y1];
+            float z2 = matrizImagem[x2][y2];
+            float z3 = matrizImagem[x3][y3];
+            float z4 = matrizImagem[x4][y4];
 
-glBegin(GL_LINES);
-for (int i = 0; i < 38; ++i) {
-    for (int j = 0; j < 38; ++j) {
-        // Coordenadas dos vértices dos triângulos
-        int x1 = i;
-        int y1 = j;
-        int x2 = i + 1;
-        int y2 = j;
-        int x3 = i + 1;
-        int y3 = j + 1;
-        float z1 = matrizImagem[x1][y1];
-        float z2 = matrizImagem[x2][y2];
-        float z3 = matrizImagem[x3][y3];
+            // Coordenadas de textura correspondentes aos vértices
+            float u1 = static_cast<float>(x1) / 39.0f;
+            float v1 = static_cast<float>(y1) / 39.0f;
+            float u2 = static_cast<float>(x2) / 39.0f;
+            float v2 = static_cast<float>(y2) / 39.0f;
+            float u3 = static_cast<float>(x3) / 39.0f;
+            float v3 = static_cast<float>(y3) / 39.0f;
+            float u4 = static_cast<float>(x4) / 39.0f;
+            float v4 = static_cast<float>(y4) / 39.0f;
 
-        // Desenhar as linhas das arestas dos triângulos
-        glVertex3f(x1, y1, z1);
-        glVertex3f(x2, y2, z2);
+            // Triângulo 1
+            glTexCoord2f(u1, v1);
+            glVertex3f(x1, y1, z1);
+            glTexCoord2f(u2, v2);
+            glVertex3f(x2, y2, z2);
+            glTexCoord2f(u3, v3);
+            glVertex3f(x3, y3, z3);
 
-        glVertex3f(x2, y2, z2);
-        glVertex3f(x3, y3, z3);
-
-        glVertex3f(x3, y3, z3);
-        glVertex3f(x1, y1, z1);
-        
-        // Desenhar linha do triângulo adjacente
-        glVertex3f(x1, y1, z1);
-        glVertex3f(x1, y1 + 1, matrizImagem[x1][y1 + 1]);
-        
-        glVertex3f(x1, y1 + 1, matrizImagem[x1][y1 + 1]);
-        glVertex3f(x3, y3, z3);
+            // Triângulo 2
+            glTexCoord2f(u2, v2);
+            glVertex3f(x2, y2, z2);
+            glTexCoord2f(u4, v4);
+            glVertex3f(x4, y4, z4);
+            glTexCoord2f(u3, v3);
+            glVertex3f(x3, y3, z3);
+        }
     }
-}
+    glEnd();
+// Desative o uso de textura após desenhar a malha
+    glDisable(GL_TEXTURE_2D);
+     // Troca o buffer de desenho com o buffer de exibição
+    glutSwapBuffers();
+
 glEnd();
 
 
@@ -492,12 +617,15 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     matrizImagem = lerImagemPGM("imagem.ppm", &largura, &altura);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutCreateWindow("Malha de Triângulos Vazados OpenGL");
     
     glEnable(GL_DEPTH_TEST);
     iluminar();
+    loadSandTexture();
+    loadCarTexture();
+
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
@@ -505,5 +633,7 @@ int main(int argc, char** argv) {
     glutKeyboardFunc(movimentaCarrinho);
 
     glutMainLoop();
+    // Libera a memória alocada para a matriz
+    liberarMatriz(matrizImagem, altura);
     return 0;
 }
