@@ -347,6 +347,9 @@ void liberarMatriz(int** matriz, int altura) {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+    // Habilita o culling de faces só renderiza o que for visivél para o usuário
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     // Ajusta a direção do olhar para a direção em que o carrinho está indo
     float lookAtX = carX - cameraX; // Ajusta para trás do carrinho
