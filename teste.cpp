@@ -9,72 +9,34 @@
 #include <assimp/postprocess.h>
 #include <iostream>
 #include <string>
-#include <SOIL/SOIL.h>
 
-
-// Aaa
-// Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp -lSOIL
+// Para compilar:  g++ teste.cpp -o teste -lGL -lGLU -lglut -lassimp
 // Para executar: ./teste
 
-
 // Para mover o carrinho aperte no botões W,A,S,D
-
 
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
 
-float cameraX = -5.0f;
-float cameraY = 0.0f;
-float cameraZ = 3.0f;
+double cameraX = 10.0f;
+double cameraY = 60.0f;
+double cameraZ = 10.0f;
 
 // Variáveis para armazenar a posição do carrinho
-
-float carX = 0.0f;
-
-float carY = 20.0f;
-float carZ = 0.0f;
+int carX = 0.0f;
+int carY = 20.0f;
+int carZ = 0.0f;
 float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
-int direcaoMovimento = 0; // Variável para definir se o carrinho está indo ou voltando
-float distanciaLadeira = 0; // Variável para definir a distancia do carro para a ladeira proxima.
+int direcaoMovimento = 1; // Variável para definir se o carrinho está indo ou voltando
 
 int** matrizImagem;
 int largura;
 int altura;
 
 const char* carrinhoPath = "carro.obj"; // Caminho para o arquivo OBJ do carrinho
-const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
+const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo
 
 
-GLuint texName; // Variável para armazenar o nome da textura
-
-
-
-
-
-void loadSandTexture() {
-    // Carrega a imagem JPEG usando a SOIL
-    int width, height, channels;
-    unsigned char* image = SOIL_load_image("solo.jpg", &width, &height, &channels, SOIL_LOAD_RGBA);
-    if (!image) {
-        std::cerr << "Erro ao carregar a imagem de areia." << std::endl;
-        return;
-    }
-    // Gera uma textura OpenGL
-    glGenTextures(1, &texName);
-    glBindTexture(GL_TEXTURE_2D, texName);
-
-    // Define os parâmetros de textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Carrega a imagem para a textura
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-    // Libera a memória alocada pela SOIL
-    SOIL_free_image_data(image);
-}
 void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
@@ -139,102 +101,169 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
-void anguloDoCarrinho(){
-    // Futura movimentação que faz o carrinho inclinar para subir e descer em elevações do plano
-}
-
-void preverElevacao(){
-    // Função para prever se existe alguma elevação no caminho para o carrinho.
-}
-
-
 double distanciaEuclidiana(double x1, double y1, double x2, double y2) {
     return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
 // Função que prever alguma elevação no terreno e sinalizar quando estiver perto
-int preverElevacao(float x, float y){
-    int intX = x;
-    int intY = y;
-    printf("%d, %d %lf\n", matrizImagem[intX+3][intY], matrizImagem[intX][intY], distanciaLadeira);
-    if (distanciaLadeira > 0.09){
-        if(distanciaLadeira <= 2.4){
-            return 1;
-        }else{
-            return 0;
-        }
+void preverElevacao(int x, int y, int i, int j, int os){
+    int linha = x + i;
+    int coluna = y + j;
+    printf("%d %d\n", linha, coluna);
+    if(matrizImagem[linha][coluna] - matrizImagem[x][y] == 1 ){
+        printf("ladeira\n");
+        carZ += 1.0;
+        carX += i;
+        carY += j;
     }else{
-        for(int i=1; i <= 3; i++){
-            angulo = 0.0f;
-            if(matrizImagem[intX+i][intY] != matrizImagem[intX][intY]){
-                printf("tem ladeira\n");
-                distanciaLadeira = distanciaEuclidiana(intX+i,intY, intX, intY)-0.0;
-                if(distanciaLadeira == 1){
-                    angulo = 25.956f;
-                }
-                if(distanciaLadeira == 2){
-                    angulo = 7.416f;
-                }
-                return 1;
-            }
+        if(matrizImagem[linha][coluna] - matrizImagem[x][y] == -1){
+            carZ -= 1.0;
+            carX += i;
+            carY += j;
+            printf("depressao\n");
         }
-        carZ = matrizImagem[intX][intY];
-        angulo = 0.0f;
+    }
+}
+
+int preverObstaculo(int x, int y, int i, int j){
+    int linha = x + i;
+    int coluna = y + j;
+    if((linha > 39 || linha < 0) || (coluna > 39 || coluna < 0)){
+        printf("tem obstaculo\n");
         return 0;
+    }else{
+        if( (matrizImagem[linha][coluna] - matrizImagem[x][y] > 1 || matrizImagem[linha][coluna] - matrizImagem[x][y] < -1)){
+            return 0;
+        }else{
+            return 1;
+        }
     }
 }
 
 
 
 void renderModel(const aiScene* scene) {
+    glClear(GL_COLOR_BUFFER_BIT);
     if (!scene) {
         std::cerr << "Erro ao carregar o modelo do carrinho." << std::endl;
         return;
     }
 
-    float anguloRotacao = 90.0f; // Rotacionar o carrinho 90 graus em torno do eixo verde (Y)
-
     glPushMatrix(); // Inicie a matriz de transformação atual
     glPushAttrib(GL_CURRENT_BIT);
-    glColor3f(0.0f,0.0f,1.0f);
-    glTranslatef(carX, carY, carZ);
-    glRotatef(anguloRotacao, 0.0f, 1.0f, 0.0f);
-    glRotatef(90.0f, 0.0, 0.0 , 1.0f);
-    // Aumenta o angulo do carro, e sobe um pouco no eixo Z. (Indo para frente em uma ladeira)
+    glColor3f(0.0f,1.0f,1.0f);
+
+    printf("Direcao:%d\n", direcaoMovimento);
+    int x = carX;
+    int y = carY;
     if(direcaoMovimento == 1){
-        if(preverElevacao(carX,carY)){
-            distanciaLadeira -= 0.1;
-            angulo += 1.875f;
-            carZ += 0.042f;
-            glRotatef(-angulo, 1.0f, 0.0, 0.0);
+        if(preverObstaculo(carX+1,carY, 1, 0) ){
+            carX += 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, 1, 0, 1);  
         }else{
-            distanciaLadeira -=0.1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
         }
-    }else{
-        // Diminui o angulo do carro (Voltando para tras em uma ladeira)
-        if(direcaoMovimento == -1){
-            if(preverElevacao(carX,carY)){
-                if(angulo == 0){
-                    angulo = 45.0f;
-                    carZ -= 0.042f;
-                    glRotatef(-angulo,1.0f,0.0f,0.0f);
-                }else{
-                    distanciaLadeira += 0.1;
-                    angulo -= 1.875f;
-                    carZ -= 0.042f;
-                    glRotatef(-angulo,1.0f,0.0f,0.0f);
-                }
-            }
+    }
+    if(direcaoMovimento == 2){
+        if(preverObstaculo(carX-1,carY, -1, 0)){
+            carX -= 1;
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, -1, 0, 2);
         }else{
-            // Não realizar nenhum alteração no angulo. (Quando for movimentar a camera ou ir para os lados)
-            if(direcaoMovimento == 0){
-                glRotatef(-angulo,1.0f,0.0f,0.0f);
-            }
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);  
+        }
+    }
+    if(direcaoMovimento == 3 ){
+        if(preverObstaculo(carX,carY+1, 0, 1)){
+            carY += 1;
+            glTranslatef(carX, carY, carZ);
+            glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(180.0f, 0.0, 0.0 , 1.0f);
+            preverElevacao(carX,carY,0,1, 3);
+        }else{
+           glTranslatef(carX, carY, carZ);
+            glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(180.0f, 0.0, 0.0 , 1.0f); 
+        }
+    }
+    if(direcaoMovimento == 4){
+        if(preverObstaculo(carX,carY-1, 0, -1)){
+            carY -= 1;
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            preverElevacao(carX, carY, 0, -1, 4);  
+        }else{
+            glTranslatef(carX, carY, carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f); 
+        }
+    }
+    if(direcaoMovimento == 5){
+        if(preverObstaculo(carX+1,carY+1, 1, 1)){
+            carX += 1;
+            carY += 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(135.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, 1, 1, 5); 
+        }else{
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(135.0f, 0.0f, 1.0f, 0.0f); 
+        }
+    }
+    if(direcaoMovimento == 6){
+        if(preverObstaculo(carX+1,carY-1, 1, -1)){
+            carX += 1;
+            carY -= 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, 1, -1, 6);
+        }else{
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(45.0f, 0.0f, 1.0f, 0.0f);  
+        }
+    }
+    if(direcaoMovimento == 7){
+        if(preverObstaculo(carX-1,carY+1, -1, 1)){
+            carX -= 1;
+            carY += 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-135.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, -1, 1, 7);
+        }else{
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-135.0f, 0.0f, 1.0f, 0.0f);  
+        }
+    }
+    if(direcaoMovimento == 8){
+        if(preverObstaculo(carX-1,carY-1, -1, -1)){
+            carX -= 1;
+            carY -= 1;
+            glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
+            preverElevacao(carX, carY, -1, -1, 8); 
+        }else{
+           glTranslatef(carX,carY,carZ);
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            glRotatef(-45.0f, 0.0f, 1.0f, 0.0f); 
         }
     }
     
-
-    printf("carY:%f  carZ:%f  carX:%f \n", carY, carZ, carX);
+    printf("carY:%d  carZ:%d  carX:%d \n", carY, carZ, carX);
     // Renderize o modelo do carrinho
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
         const aiMesh* mesh = scene->mMeshes[i];
@@ -251,6 +280,7 @@ void renderModel(const aiScene* scene) {
     }
     glPopAttrib();
     glPopMatrix(); // Restaure a matriz de transformação anterior
+    glFlush();
 }
 
 
@@ -303,19 +333,12 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    // Ajusta a direção do olhar para a direção em que o carrinho está indo
-    float lookAtX = carX - cameraX; // Ajusta para trás do carrinho
-    float lookAtY = carY - cameraY; // Ajusta para lado do carrinho
-    float lookAtZ = carZ - cameraZ; // Mantém a posição Z do carrinho
 
-    // Configuração da câmera para simular o carrinho
-    gluLookAt(carX + cameraX, carY + cameraY, carZ + cameraZ, // Posição da câmera
-              lookAtX, lookAtY, lookAtZ, // Ponto para o qual a câmera está olhando
-              0.0, 0.0, 1.0); // Vetor "para cima"
+    // Configuração da câmera
+    gluLookAt(cameraX, cameraY, cameraZ, 10.0, 0.0, 6.0, 0.0, 0.0, 5.0);
 
     // Cor de fundo (branco)
-    glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
-
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Configurar o material do carrinho
     GLfloat mat_ambient[] = {2.0f, 0.2f, 0.2f, 1.0f};
@@ -327,7 +350,7 @@ void display() {
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-     
+
     // Definir a cor do carrinho
     glColor3f(1.0f, 0.0f, 0.0f); // Vermelho
 
@@ -335,73 +358,45 @@ void display() {
     glColor3f(0.0f, 0.0f, 0.5f);
      Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(carrinhoPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
-
-    // Ativa o uso de textura
-    glEnable(GL_TEXTURE_2D);
-
-    // Configura o modo de combinação da textura (nesse caso, GL_REPLACE)
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-    // Define a textura atual como a textura de areia
-    glBindTexture(GL_TEXTURE_2D, texName);
+    
     desenhar_luz();
 
     renderModel(scene);
-    
 
     glutSwapBuffers();
-glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBegin(GL_TRIANGLES);
-    for (int i = 0; i < 39; ++i) {
-        for (int j = 0; j < 39; ++j) {
-            // Coordenadas dos vértices dos triângulos
-            int x1 = i;
-            int y1 = j;
-            int x2 = i + 1;
-            int y2 = j;
-            int x3 = i;
-            int y3 = j + 1;
-            int x4 = i + 1;
-            int y4 = j + 1;
-            float z1 = matrizImagem[x1][y1];
-            float z2 = matrizImagem[x2][y2];
-            float z3 = matrizImagem[x3][y3];
-            float z4 = matrizImagem[x4][y4];
 
-            // Coordenadas de textura correspondentes aos vértices
-            float u1 = static_cast<float>(x1) / 39.0f;
-            float v1 = static_cast<float>(y1) / 39.0f;
-            float u2 = static_cast<float>(x2) / 39.0f;
-            float v2 = static_cast<float>(y2) / 39.0f;
-            float u3 = static_cast<float>(x3) / 39.0f;
-            float v3 = static_cast<float>(y3) / 39.0f;
-            float u4 = static_cast<float>(x4) / 39.0f;
-            float v4 = static_cast<float>(y4) / 39.0f;
+glBegin(GL_LINES);
+for (int i = 0; i < 38; ++i) {
+    for (int j = 0; j < 38; ++j) {
+        // Coordenadas dos vértices dos triângulos
+        int x1 = i;
+        int y1 = j;
+        int x2 = i + 1;
+        int y2 = j;
+        int x3 = i + 1;
+        int y3 = j + 1;
+        float z1 = matrizImagem[x1][y1];
+        float z2 = matrizImagem[x2][y2];
+        float z3 = matrizImagem[x3][y3];
 
-            // Triângulo 1
-            glTexCoord2f(u1, v1);
-            glVertex3f(x1, y1, z1);
-            glTexCoord2f(u2, v2);
-            glVertex3f(x2, y2, z2);
-            glTexCoord2f(u3, v3);
-            glVertex3f(x3, y3, z3);
+        // Desenhar as linhas das arestas dos triângulos
+        glVertex3f(x1, y1, z1);
+        glVertex3f(x2, y2, z2);
 
-            // Triângulo 2
-            glTexCoord2f(u2, v2);
-            glVertex3f(x2, y2, z2);
-            glTexCoord2f(u4, v4);
-            glVertex3f(x4, y4, z4);
-            glTexCoord2f(u3, v3);
-            glVertex3f(x3, y3, z3);
-        }
+        glVertex3f(x2, y2, z2);
+        glVertex3f(x3, y3, z3);
+
+        glVertex3f(x3, y3, z3);
+        glVertex3f(x1, y1, z1);
+        
+        // Desenhar linha do triângulo adjacente
+        glVertex3f(x1, y1, z1);
+        glVertex3f(x1, y1 + 1, matrizImagem[x1][y1 + 1]);
+        
+        glVertex3f(x1, y1 + 1, matrizImagem[x1][y1 + 1]);
+        glVertex3f(x3, y3, z3);
     }
-    glEnd();
-// Desative o uso de textura após desenhar a malha
-    glDisable(GL_TEXTURE_2D);
-     // Troca o buffer de desenho com o buffer de exibição
-    glutSwapBuffers();
-
+}
 glEnd();
 
 
@@ -435,19 +430,15 @@ void specialKeys(int key, int x, int y) {
     switch (key) {
     case GLUT_KEY_LEFT:
         cameraX -= 0.1f;
-        direcaoMovimento = 0;
         break;
     case GLUT_KEY_RIGHT:
         cameraX += 0.1f;
-        direcaoMovimento = 0;
         break;
     case GLUT_KEY_UP:
         cameraY += 0.1f;
-        direcaoMovimento = 0;
         break;
     case GLUT_KEY_DOWN:
         cameraY -= 0.1f;
-        direcaoMovimento = 0;
         break;
     }
     glutPostRedisplay();
@@ -455,28 +446,47 @@ void specialKeys(int key, int x, int y) {
 
 void movimentaCarrinho(unsigned char key, int x, int y) {
     switch (key) {
-        case 's':
-        case 'S':
-            carX -= 0.1f;
-            direcaoMovimento = -1;
+        case 'x':
+        case 'X':
+            direcaoMovimento = 2;
+            glutPostRedisplay();
             break;
         case 'w':
         case 'W':
-            carX += 0.1f;
             direcaoMovimento = 1;
+            glutPostRedisplay();
             break;
         case 'a':
         case 'A':
-            carY += 0.1f;
-            direcaoMovimento = 0;
+            direcaoMovimento = 3;
+            glutPostRedisplay();
             break;
         case 'd':
         case 'D':
-            direcaoMovimento = 0;
-            carY -= 0.1f;
+            direcaoMovimento = 4;
+            glutPostRedisplay();
+            break;
+        case 'q':
+        case 'Q':
+            direcaoMovimento = 5;
+            glutPostRedisplay();
+            break;
+        case 'e':
+        case 'E':
+            direcaoMovimento = 6;
+            glutPostRedisplay();
+            break;
+        case 'z':
+        case 'Z':
+            direcaoMovimento = 7;
+            glutPostRedisplay();
+            break;
+        case 'c':
+        case 'C':
+            direcaoMovimento = 8;
+            glutPostRedisplay();
             break;
     }
-    glutPostRedisplay();
 }
 
 int main(int argc, char** argv) {
@@ -488,8 +498,6 @@ int main(int argc, char** argv) {
     
     glEnable(GL_DEPTH_TEST);
     iluminar();
-    loadSandTexture();
-
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
