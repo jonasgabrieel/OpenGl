@@ -21,7 +21,7 @@
 
 
 #define MAX_DIMENSION 1000
-GLfloat luz_pontual[] = {0.3, 0.5, 0.5, 1.0 };
+GLfloat luz_pontual[] = {0.3,0.5, 0.5, 1.0 };
 
 float cameraX = -5.0f;
 float cameraY = 0.0f;
@@ -121,7 +121,7 @@ void desenhar_luz(){
    
    glEnable(GL_LIGHTING);
    glColor3f (1.0, 1.0, 0.0);
-   glutSolidSphere(0.5,50,50);
+   glutSolidSphere(2.0,50,50);
    glDisable(GL_LIGHTING);
    
    glPopAttrib();
@@ -350,7 +350,7 @@ void display() {
               0.0, 0.0, 1.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
-    glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.9f, 0.0f);
 
     desenhar_luz();
     
