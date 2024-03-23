@@ -607,6 +607,7 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
             glutPostRedisplay();
             break;
     }
+
 }
 
 int main(int argc, char** argv) {
