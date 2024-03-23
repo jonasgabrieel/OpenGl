@@ -531,7 +531,7 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     matrizImagem = lerImagemPGM("imagem.ppm", &largura, &altura);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(500, 500);
     glutCreateWindow("Malha de Triângulos Vazados OpenGL");
     
