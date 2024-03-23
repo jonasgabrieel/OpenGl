@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string>
 #include <SOIL/SOIL.h>
+#include <SDL2/SDL_mixer.h>
+
 
 
 
@@ -191,7 +193,7 @@ void preverElevacao(int x, int y, int i, int j, int os){
 int preverObstaculo(int x, int y, int i, int j){
     int linha = x + i;
     int coluna = y + j;
-    if((linha > 79 || linha < 0) || (coluna > 39 || coluna < 0)){
+    if((linha > 39 || linha < 0) || (coluna > 79 || coluna < 0)){
         printf("tem obstaculo\n");
         return 0;
     }else{
@@ -466,6 +468,7 @@ void display() {
     glutSwapBuffers();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindTexture(GL_TEXTURE_2D, texName); // Aplica textura do terreno
     glBegin(GL_TRIANGLES);
     for (int i = 0; i < 39; ++i) {
@@ -611,6 +614,14 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
 }
 
 int main(int argc, char** argv) {
+      // Inicialize o SDL Mixer
+    Mix_Init(MIX_INIT_MP3);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+
+    // Carregue e reproduza a música
+    Mix_Music* music = Mix_LoadMUS("bob.mp3");
+    Mix_PlayMusic(music, -1); // -1 para reprodução infinita
+
     glutInit(&argc, argv);
     matrizImagem = lerImagemPGM("imagem.ppm", &largura, &altura);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -631,5 +642,8 @@ int main(int argc, char** argv) {
     glutMainLoop();
     // Libera a memória alocada para a matriz
     liberarMatriz(matrizImagem, altura);
+      // Libere a música e finalize o SDL Mixer
+    Mix_FreeMusic(music);
+    Mix_Quit();
     return 0;
 }
