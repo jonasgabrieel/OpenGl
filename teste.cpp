@@ -277,7 +277,7 @@ void renderModel(const aiScene* scene) {
                 unsigned int index = face.mIndices[k];
                 const aiVector3D& vertex = mesh->mVertices[index];
                 const aiVector3D& uv = mesh->mTextureCoords[0][index]; // Coordenadas de textura do modelo
-                glTexCoord2f(uv.x, uv.y); // Aplica as coordenadas de textura do modelo do carro
+                glTexCoord2f(uv.x, 1.0f - uv.y); // Aplica as coordenadas de textura do modelo do carro
                 glVertex3f(vertex.x * scaleFactor, vertex.y * scaleFactor, vertex.z * scaleFactor);
             }
         }
