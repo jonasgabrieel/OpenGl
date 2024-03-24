@@ -25,15 +25,16 @@
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3,0.5, 0.5, 1.0 };
 
-float cameraX = -8.0f;
+float cameraX = -7.0f;
 float cameraY = 0.0f;
-float cameraZ = 3.0f;
+float cameraZ = 0.8f;
 
 // Variáveis para armazenar a posição do carrinho
 
-float carX = 5.0f;
+float carX = 2.0f;
 float carY = 20.0f;
 float carZ = 0.0f;
+
 float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
 int direcaoMovimento = 0; // Variável para definir se o carrinho está indo ou voltando
 float distanciaLadeira = 0; // Variável para definir a distancia do carro para a ladeira proxima.
@@ -117,7 +118,7 @@ void desenhar_luz(){
     
    glPushMatrix();
    glTranslatef(luz_pontual[0],luz_pontual[1],luz_pontual[2]); 
-   glTranslatef(0.0, 0.0, 10.0); // Translada a esfera 2 unidades no eixo Z (aqui, estamos transladando-a para frente)
+   glTranslatef(40.0, 20.0, 10.0); // Translada a esfera 2 unidades no eixo Z (aqui, estamos transladando-a para frente)
 
    
    glEnable(GL_LIGHTING);
@@ -423,12 +424,12 @@ void display() {
     // Ajusta a direção do olhar para a direção em que o carrinho está indo
     float lookAtX = carX - cameraX; // Ajusta para trás do carrinho
     float lookAtY = carY - cameraY; // Ajusta para lado do carrinho
-    float lookAtZ = carZ - cameraZ; // Mantém a posição Z do carrinho
+    float lookAtZ = carZ + 3.0; // Mantém a posição Z do carrinho
 
     // Configuração da câmera para simular o carrinho
-    gluLookAt(carX + cameraX, carY + cameraY, carZ + cameraZ, // Posição da câmera
+    gluLookAt(carX + cameraX, carY + cameraY, carZ + 2.0, // Posição da câmera
               lookAtX, lookAtY, lookAtZ, // Ponto para o qual a câmera está olhando
-              0.0, 0.0, 2.0); // Vetor "para cima"
+              0.0, 0.0, 1.0); // Vetor "para cima"
 
     // Cor de fundo (branco)
     glClearColor(0.0f, 0.7f, 1.0f, 1.0f); // Azul ligeiramente mais escuro
