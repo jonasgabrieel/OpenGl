@@ -168,24 +168,25 @@ void iluminar(){
 }
 
 
-double distanciaEuclidiana(double x1, double y1, double x2, double y2) {
-    return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
-}
-
-void preverElevacao(int x, int y, int i, int j){
+void preverElevacao(int x, int y, int i, int j, int addSubidaX, int addDescidaX, int addSubidaY, int addDescidaY){
     int linha = x + i;
     int coluna = y + j;
-    if(matrizImagem[linha][coluna] - matrizImagem[x][y] == 1 ){
-        printf("ladeira\n");
-        carZ += 1.0;
-        carX += i;
-        carY += j;
+    printf("%d %d\n", linha, coluna);
+    if( linha < 0 || coluna < 0){
+        return;
     }else{
-        if(matrizImagem[linha][coluna] - matrizImagem[x][y] == -1){
-            carZ -= 1.0;
-            carX += i;
-            carY += j;
-            printf("depressao\n");
+        if(matrizImagem[linha][coluna] - matrizImagem[x][y] == 1 ){
+            printf("ladeira\n");
+            carZ += 1.0;
+            carX += i + addSubidaX;
+            carY += j + addSubidaY;
+        }else{
+            if(matrizImagem[linha][coluna] - matrizImagem[x][y] == -1){
+                carZ -= 1.0;
+                carX += i + addDescidaX;
+                carY += j + addDescidaY;
+                printf("depressao\n");
+            }
         }
     }
 }
@@ -193,7 +194,7 @@ void preverElevacao(int x, int y, int i, int j){
 int preverObstaculo(int x, int y, int i, int j){
     int linha = x + i;
     int coluna = y + j;
-    if((linha > 39 || linha < 0) || (coluna > 79 || coluna < 0)){
+    if((linha > 39 || linha < 0) || (coluna > 39 || coluna < 0)){
         printf("tem obstaculo\n");
         return 0;
     }else{
@@ -213,12 +214,12 @@ void renderModel(const aiScene* scene) {
         return;
     }
 
-    // Defina o ângulo de rotação para rotacionar o carrinho 90 graus em torno do eixo Y
     float anguloRotacao = 90.0f;
 
     // Inicie a matriz de transformação atual
     glPushMatrix();
     glPushAttrib(GL_CURRENT_BIT);
+    glColor3f(0.0f, 0.0f, 1.0f); // Defina a cor do carrinho
 
     // Translação e rotação do carrinho
     printf("Direcao:%d\n", direcaoMovimento);
@@ -227,10 +228,10 @@ void renderModel(const aiScene* scene) {
     if(direcaoMovimento == 1){
         if(preverObstaculo(carX+1,carY, 1, 0) ){
             carX += 1;
+            preverElevacao(carX, carY, 1, 0, 1, 1, 0, 0);
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-            preverElevacao(carX, carY, 2, 0);  
         }else{
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
@@ -240,25 +241,26 @@ void renderModel(const aiScene* scene) {
     if(direcaoMovimento == 2){
         if(preverObstaculo(carX-1,carY, -1, 0)){
             carX -= 1;
+            preverElevacao(carX, carY, -1, 0, -1, -1, 0, 0);
             glTranslatef(carX, carY, carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-            preverElevacao(carX, carY, -1, 0);
         }else{
             glTranslatef(carX, carY, carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);  
         }
     }
+
     if(direcaoMovimento == 3 ){
         if(preverObstaculo(carX,carY+1, 0, 1)){
             carY += 1;
+            preverElevacao(carX,carY, 0, 1, 0, 0, 1, 1);
             glTranslatef(carX, carY, carZ);
             glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(180.0f, 0.0, 0.0 , 1.0f);
-            preverElevacao(carX,carY,0,1);
         }else{
-           glTranslatef(carX, carY, carZ);
+            glTranslatef(carX, carY, carZ);
             glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(180.0f, 0.0, 0.0 , 1.0f); 
         }
@@ -266,9 +268,9 @@ void renderModel(const aiScene* scene) {
     if(direcaoMovimento == 4){
         if(preverObstaculo(carX,carY-1, 0, -1)){
             carY -= 1;
+            preverElevacao(carX, carY, 0, -1, 0, 0, -1, -1); 
             glTranslatef(carX, carY, carZ);
-            glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-            preverElevacao(carX, carY, 0, -1);  
+            glRotatef(90.0f, 1.0f, 0.0f, 0.0f); 
         }else{
             glTranslatef(carX, carY, carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f); 
@@ -278,10 +280,10 @@ void renderModel(const aiScene* scene) {
         if(preverObstaculo(carX+1,carY+1, 1, 1)){
             carX += 1;
             carY += 1;
+            preverElevacao(carX, carY, 1, 1, 1, 1, 1, 1);
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(135.0f, 0.0f, 1.0f, 0.0f);
-            preverElevacao(carX, carY, 1, 1)  
         }else{
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
@@ -292,10 +294,10 @@ void renderModel(const aiScene* scene) {
         if(preverObstaculo(carX+1,carY-1, 1, -1)){
             carX += 1;
             carY -= 1;
+            preverElevacao(carX, carY, 1, -1, 1, 1, -1, -1);
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
-            preverElevacao(carX, carY, 1, -1);
         }else{
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
@@ -306,10 +308,10 @@ void renderModel(const aiScene* scene) {
         if(preverObstaculo(carX-1,carY+1, -1, 1)){
             carX -= 1;
             carY += 1;
+            preverElevacao(carX, carY, -1, 1, -1, -1, 1, 1);
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(-135.0f, 0.0f, 1.0f, 0.0f);
-            preverElevacao(carX, carY, -1, 1);
         }else{
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
@@ -320,10 +322,10 @@ void renderModel(const aiScene* scene) {
         if(preverObstaculo(carX-1,carY-1, -1, -1)){
             carX -= 1;
             carY -= 1;
+            preverElevacao(carX, carY, -1, -1, -1, -1, -1, -1); 
             glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
             glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
-            preverElevacao(carX, carY, -1, -1); 
         }else{
            glTranslatef(carX,carY,carZ);
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
