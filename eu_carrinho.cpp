@@ -12,32 +12,25 @@
 #include <SOIL/SOIL.h>
 #include <SDL2/SDL_mixer.h>
 
-
-
-
 // Para compilar: g++ teste.cpp -o teste -lassimp -lGL -lGLU -lglut -lSOIL -lSDL2 -lSDL2_mixer
 // Para executar: ./teste
 
 
 // Para mover o carrinho aperte no botões W,A,S,D
-
-
 #define MAX_DIMENSION 1000
 GLfloat luz_pontual[] = {0.3,0.5, 0.5, 1.0 };
 
+// Variáveis para armazenar a posição da camera
 float cameraX = -7.0f;
 float cameraY = 0.0f;
 float cameraZ = 0.8f;
 
 // Variáveis para armazenar a posição do carrinho
-
 float carX = 2.0f;
 float carY = 20.0f;
 float carZ = 0.0f;
 
-float angulo = 0.0f; // Variável para definir o angulo do carrinho enquanto sobe ou descer a ladeira
 int direcaoMovimento = 0; // Variável para definir se o carrinho está indo ou voltando
-float distanciaLadeira = 0; // Variável para definir a distancia do carro para a ladeira proxima.
 
 int** matrizImagem;
 int largura;
@@ -45,13 +38,10 @@ int altura;
 
 const char* carrinhoPath = "carrinho.obj"; // Caminho para o arquivo OBJ do carrinho
 const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
-
 bool hasTransparency = true; 
-
 GLuint texName; // Variável para armazenar o nome da textura
 
 /*-----------------Carrega textura do Carro---------------------*/
-
 GLuint texNameCarrinho; // Variável para armazenar o nome da textura do carrinho
 
 void loadCarTexture() {
@@ -80,6 +70,8 @@ void loadCarTexture() {
 }
 
 /*--------------------------------------------------------------*/
+
+/*-----------------Carrega textura do Malha---------------------*/
 void loadSandTexture() {
     // Carrega a imagem JPEG usando a SOIL
     int width, height, channels;
@@ -104,6 +96,8 @@ void loadSandTexture() {
     // Libera a memória alocada pela SOIL
     SOIL_free_image_data(image);
 }
+/*--------------------------------------------------------------*/
+
 void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
@@ -168,54 +162,59 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
-
+/*-----------------Prever Mudança de Altura---------------------*/
+// A função analisa se é uma elevação ou depressão
 void preverElevacao(int x, int y, int i, int j, int addSubidaX, int addDescidaX, int addSubidaY, int addDescidaY){
     int linha = x + i;
     int coluna = y + j;
-    printf("%d %d\n", linha, coluna);
     if( linha < 0 || coluna < 0){
         return;
     }else{
+        // Verificar se a Elevação tem a diferença de 1 metro
         if(matrizImagem[linha][coluna] - matrizImagem[x][y] == 1 ){
-            printf("ladeira\n");
-            carZ += 1.0;
-            carX += i + addSubidaX;
+            carZ += 1.0; // Subir 1 metro
+            carX += i + addSubidaX; // AddSubida é apenas para ajusta a subida
             carY += j + addSubidaY;
         }else{
+            // Verificar se a depressão tem a diferença de 1 metro
             if(matrizImagem[linha][coluna] - matrizImagem[x][y] == -1){
-                carZ -= 1.0;
-                carX += i + addDescidaX;
+                carZ -= 1.0; // Descer 1 metro
+                carX += i + addDescidaX; // AddDescida é apenas para ajusta a descida
                 carY += j + addDescidaY;
-                printf("depressao\n");
             }
         }
     }
 }
+/*--------------------------------------------------------------*/
 
+
+/*-----------------Prever Obstaculos---------------------*/
+// A função analisa se o carrinho esta perto do fim do mapa ou se existe uma elevação muito grande ou depressão muito pequena
 int preverObstaculo(int x, int y, int i, int j){
     int linha = x + i;
     int coluna = y + j;
+    // Sinaliza o fim do mapa
     if((linha > 39 || linha < 0) || (coluna > 79 || coluna < 0)){
-        printf("tem obstaculo\n");
         return 0;
     }else{
+        // Sinaliza a diferença de altura muito elevada ou muito baixa
         if( (matrizImagem[linha][coluna] - matrizImagem[x][y] > 1 || matrizImagem[linha][coluna] - matrizImagem[x][y] < -1)){
             return 0;
         }else{
+            // Nenhum obstaculo
             return 1;
         }
     }
 }
+/*--------------------------------------------------------------*/
 
 
-
+/*-----------------Redesenha o carrinho e suas posições---------------------*/
 void renderModel(const aiScene* scene) {
     if (!scene) {
         std::cerr << "Erro ao carregar o modelo do carrinho." << std::endl;
         return;
     }
-
-    float anguloRotacao = 90.0f;
 
     // Inicie a matriz de transformação atual
     glPushMatrix();
@@ -226,6 +225,7 @@ void renderModel(const aiScene* scene) {
     printf("Direcao:%d\n", direcaoMovimento);
     int x = carX;
     int y = carY;
+    // O carrinho vai para o NORTE
     if(direcaoMovimento == 1){
         if(preverObstaculo(carX+1,carY, 1, 0) ){
             carX += 1;
@@ -239,6 +239,8 @@ void renderModel(const aiScene* scene) {
             glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
         }
     }
+
+    // O carrinho vai para o SUL
     if(direcaoMovimento == 2){
         if(preverObstaculo(carX-1,carY, -1, 0)){
             carX -= 1;
@@ -253,6 +255,7 @@ void renderModel(const aiScene* scene) {
         }
     }
 
+    // O carrinho vai para o OESTE
     if(direcaoMovimento == 3 ){
         if(preverObstaculo(carX,carY+1, 0, 1)){
             carY += 1;
@@ -266,6 +269,8 @@ void renderModel(const aiScene* scene) {
             glRotatef(180.0f, 0.0, 0.0 , 1.0f); 
         }
     }
+
+    // O carrinho vai para o LESTE
     if(direcaoMovimento == 4){
         if(preverObstaculo(carX,carY-1, 0, -1)){
             carY -= 1;
@@ -277,6 +282,8 @@ void renderModel(const aiScene* scene) {
             glRotatef(90.0f, 1.0f, 0.0f, 0.0f); 
         }
     }
+
+    // O carrinho vai para o NORDOESTE
     if(direcaoMovimento == 5){
         if(preverObstaculo(carX+1,carY+1, 1, 1)){
             carX += 1;
@@ -291,6 +298,8 @@ void renderModel(const aiScene* scene) {
             glRotatef(135.0f, 0.0f, 1.0f, 0.0f); 
         }
     }
+
+    // O carrinho vai para o SUDOESTE
     if(direcaoMovimento == 6){
         if(preverObstaculo(carX+1,carY-1, 1, -1)){
             carX += 1;
@@ -305,6 +314,8 @@ void renderModel(const aiScene* scene) {
             glRotatef(45.0f, 0.0f, 1.0f, 0.0f);  
         }
     }
+
+    // O carrinho vai para o SUDESTE
     if(direcaoMovimento == 7){
         if(preverObstaculo(carX-1,carY+1, -1, 1)){
             carX -= 1;
@@ -319,6 +330,8 @@ void renderModel(const aiScene* scene) {
             glRotatef(-135.0f, 0.0f, 1.0f, 0.0f);  
         }
     }
+
+    // O carrinho vai para o NORDESTE
     if(direcaoMovimento == 8){
         if(preverObstaculo(carX-1,carY-1, -1, -1)){
             carX -= 1;
@@ -369,9 +382,10 @@ void renderModel(const aiScene* scene) {
     glPopAttrib();
     glPopMatrix(); // Restaure a matriz de transformação anterior
 }
+/*--------------------------------------------------------------*/
 
 
-
+/*-----------------Ler Imagem PGM---------------------*/
 int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
     FILE *arquivo;
     char tipo[3];
@@ -415,6 +429,7 @@ int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
 
     return matriz;
 }
+/*--------------------------------------------------------------*/
 
 // Função para liberar a memória alocada para a matriz
 void liberarMatriz(int** matriz, int altura) {
@@ -426,8 +441,7 @@ void liberarMatriz(int** matriz, int altura) {
     }
 }
 
-
-
+/*-----------------Renderizar a cena na tela---------------------*/
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -560,7 +574,9 @@ void reshape(int w, int h) {
     gluPerspective(40.0, (double)w / (double)h, 1.0, 100.0);
     glMatrixMode(GL_MODELVIEW);
 }
+/*--------------------------------------------------------------*/
 
+/*-------------------------------Movimentação da Camera-------------------------------*/
 void specialKeys(int key, int x, int y) {
     switch (key) {
     case GLUT_KEY_LEFT:
@@ -578,7 +594,9 @@ void specialKeys(int key, int x, int y) {
     }
     glutPostRedisplay();
 }
+/*--------------------------------------------------------------*/
 
+/*-------------------------------Movimentação do Carrinho-------------------------------*/
 void movimentaCarrinho(unsigned char key, int x, int y) {
     switch (key) {
         case 'x':
@@ -624,6 +642,7 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
     }
 
 }
+/*--------------------------------------------------------------*/
 
 int main(int argc, char** argv) {
       // Inicialize o SDL Mixer
