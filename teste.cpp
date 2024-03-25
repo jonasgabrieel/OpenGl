@@ -46,6 +46,7 @@ int altura;
 const char* carrinhoPath = "carrinho.obj"; // Caminho para o arquivo OBJ do carrinho
 const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
 
+bool hasTransparency = true; 
 
 GLuint texName; // Variável para armazenar o nome da textura
 
@@ -73,7 +74,7 @@ void loadCarTexture() {
 
     // Carrega a imagem para a textura
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
+   
     // Libera a memória alocada pela SOIL
     SOIL_free_image_data(image);
 }
@@ -194,7 +195,7 @@ void preverElevacao(int x, int y, int i, int j, int addSubidaX, int addDescidaX,
 int preverObstaculo(int x, int y, int i, int j){
     int linha = x + i;
     int coluna = y + j;
-    if((linha > 39 || linha < 0) || (coluna > 39 || coluna < 0)){
+    if((linha > 39 || linha < 0) || (coluna > 79 || coluna < 0)){
         printf("tem obstaculo\n");
         return 0;
     }else{
