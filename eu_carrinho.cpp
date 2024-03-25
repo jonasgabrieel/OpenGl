@@ -41,62 +41,7 @@ const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do mo
 bool hasTransparency = true; 
 GLuint texName; // Variável para armazenar o nome da textura
 
-/*-----------------Carrega textura do Carro---------------------*/
-GLuint texNameCarrinho; // Variável para armazenar o nome da textura do carrinho
-
-void loadCarTexture() {
-    // Carrega a imagem da textura do carrinho usando a SOIL
-    int width, height, channels;
-    unsigned char* image = SOIL_load_image("texturaCar.png", &width, &height, &channels, SOIL_LOAD_RGBA);
-    if (!image) {
-        std::cerr << "Erro ao carregar a imagem da textura do carrinho." << std::endl;
-        return;
-    }
-    // Gera uma textura OpenGL
-    glGenTextures(1, &texNameCarrinho);
-    glBindTexture(GL_TEXTURE_2D, texNameCarrinho);
-
-    // Define os parâmetros de textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Carrega a imagem para a textura
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-   
-    // Libera a memória alocada pela SOIL
-    SOIL_free_image_data(image);
-}
-
-/*--------------------------------------------------------------*/
-
-/*-----------------Carrega textura do Malha---------------------*/
-void loadSandTexture() {
-    // Carrega a imagem JPEG usando a SOIL
-    int width, height, channels;
-    unsigned char* image = SOIL_load_image("solo.jpg", &width, &height, &channels, SOIL_LOAD_RGBA);
-    if (!image) {
-        std::cerr << "Erro ao carregar a imagem de areia." << std::endl;
-        return;
-    }
-    // Gera uma textura OpenGL
-    glGenTextures(1, &texName);
-    glBindTexture(GL_TEXTURE_2D, texName);
-
-    // Define os parâmetros de textura
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Carrega a imagem para a textura
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-    // Libera a memória alocada pela SOIL
-    SOIL_free_image_data(image);
-}
-/*--------------------------------------------------------------*/
+/*-----------------Funções Auxiliares---------------------*/
 
 void desenhar_luz(){
 	
@@ -162,7 +107,7 @@ void iluminar(){
    glEnable(GL_LIGHT1);
 }
 
-/*-----------------Prever Mudança de Altura---------------------*/
+// Prever Mudança de Altura
 // A função analisa se é uma elevação ou depressão
 void preverElevacao(int x, int y, int i, int j, int addSubidaX, int addDescidaX, int addSubidaY, int addDescidaY){
     int linha = x + i;
@@ -185,10 +130,9 @@ void preverElevacao(int x, int y, int i, int j, int addSubidaX, int addDescidaX,
         }
     }
 }
-/*--------------------------------------------------------------*/
 
 
-/*-----------------Prever Obstaculos---------------------*/
+// Prever Obstaculos
 // A função analisa se o carrinho esta perto do fim do mapa ou se existe uma elevação muito grande ou depressão muito pequena
 int preverObstaculo(int x, int y, int i, int j){
     int linha = x + i;
@@ -206,7 +150,124 @@ int preverObstaculo(int x, int y, int i, int j){
         }
     }
 }
+
+// Ler Imagem PGM
+int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
+    FILE *arquivo;
+    char tipo[3];
+    int maxValor;
+    int i, j;
+
+    arquivo = fopen(nomeArquivo, "r");
+
+    if (arquivo == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return NULL;
+    }
+
+    fscanf(arquivo, "%s", tipo);
+
+    if (tipo[0] != 'P' || tipo[1] != '2') {
+        printf("Este código só suporta arquivos PGM no formato P2.\n");
+        fclose(arquivo);
+        return NULL;
+    }
+
+    fscanf(arquivo, "%d %d", largura, altura);
+    fscanf(arquivo, "%d", &maxValor);
+
+    if (*largura > MAX_DIMENSION || *altura > MAX_DIMENSION) {
+        printf("A dimensão da imagem é muito grande para ser armazenada na matriz.\n");
+        fclose(arquivo);
+        return NULL;
+    }
+
+    int** matriz = (int**)malloc(*altura * sizeof(int*));
+
+    for (i = 0; i < *altura; ++i) {
+        matriz[i] = (int*)malloc(*largura * sizeof(int));
+        for (j = 0; j < *largura; ++j) {
+            fscanf(arquivo, "%d", &matriz[i][j]);
+        }
+    }
+
+    fclose(arquivo);
+
+    return matriz;
+}
+
+// Função para liberar a memória alocada para a matriz
+void liberarMatriz(int** matriz, int altura) {
+    if (matriz != NULL) {
+        for (int i = 0; i < altura; ++i) {
+            free(matriz[i]);
+        }
+        free(matriz);
+    }
+}
 /*--------------------------------------------------------------*/
+
+
+
+/*---------------------------------Funções Principais----------------------------------*/
+
+
+/*-----------------Carrega textura do Carro---------------------*/
+GLuint texNameCarrinho; // Variável para armazenar o nome da textura do carrinho
+
+void loadCarTexture() {
+    // Carrega a imagem da textura do carrinho usando a SOIL
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image("texturaCar.png", &width, &height, &channels, SOIL_LOAD_RGBA);
+    if (!image) {
+        std::cerr << "Erro ao carregar a imagem da textura do carrinho." << std::endl;
+        return;
+    }
+    // Gera uma textura OpenGL
+    glGenTextures(1, &texNameCarrinho);
+    glBindTexture(GL_TEXTURE_2D, texNameCarrinho);
+
+    // Define os parâmetros de textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Carrega a imagem para a textura
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+   
+    // Libera a memória alocada pela SOIL
+    SOIL_free_image_data(image);
+}
+/*--------------------------------------------------------------*/
+
+/*-----------------Carrega textura do Malha---------------------*/
+void loadSandTexture() {
+    // Carrega a imagem JPEG usando a SOIL
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image("solo.jpg", &width, &height, &channels, SOIL_LOAD_RGBA);
+    if (!image) {
+        std::cerr << "Erro ao carregar a imagem de areia." << std::endl;
+        return;
+    }
+    // Gera uma textura OpenGL
+    glGenTextures(1, &texName);
+    glBindTexture(GL_TEXTURE_2D, texName);
+
+    // Define os parâmetros de textura
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Carrega a imagem para a textura
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+
+    // Libera a memória alocada pela SOIL
+    SOIL_free_image_data(image);
+}
+/*--------------------------------------------------------------*/
+
 
 
 /*-----------------Redesenha o carrinho e suas posições---------------------*/
@@ -385,62 +446,6 @@ void renderModel(const aiScene* scene) {
 /*--------------------------------------------------------------*/
 
 
-/*-----------------Ler Imagem PGM---------------------*/
-int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
-    FILE *arquivo;
-    char tipo[3];
-    int maxValor;
-    int i, j;
-
-    arquivo = fopen(nomeArquivo, "r");
-
-    if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo.\n");
-        return NULL;
-    }
-
-    fscanf(arquivo, "%s", tipo);
-
-    if (tipo[0] != 'P' || tipo[1] != '2') {
-        printf("Este código só suporta arquivos PGM no formato P2.\n");
-        fclose(arquivo);
-        return NULL;
-    }
-
-    fscanf(arquivo, "%d %d", largura, altura);
-    fscanf(arquivo, "%d", &maxValor);
-
-    if (*largura > MAX_DIMENSION || *altura > MAX_DIMENSION) {
-        printf("A dimensão da imagem é muito grande para ser armazenada na matriz.\n");
-        fclose(arquivo);
-        return NULL;
-    }
-
-    int** matriz = (int**)malloc(*altura * sizeof(int*));
-
-    for (i = 0; i < *altura; ++i) {
-        matriz[i] = (int*)malloc(*largura * sizeof(int));
-        for (j = 0; j < *largura; ++j) {
-            fscanf(arquivo, "%d", &matriz[i][j]);
-        }
-    }
-
-    fclose(arquivo);
-
-    return matriz;
-}
-/*--------------------------------------------------------------*/
-
-// Função para liberar a memória alocada para a matriz
-void liberarMatriz(int** matriz, int altura) {
-    if (matriz != NULL) {
-        for (int i = 0; i < altura; ++i) {
-            free(matriz[i]);
-        }
-        free(matriz);
-    }
-}
-
 /*-----------------Renderizar a cena na tela---------------------*/
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -576,25 +581,6 @@ void reshape(int w, int h) {
 }
 /*--------------------------------------------------------------*/
 
-/*-------------------------------Movimentação da Camera-------------------------------*/
-void specialKeys(int key, int x, int y) {
-    switch (key) {
-    case GLUT_KEY_LEFT:
-        cameraX -= 0.1f;
-        break;
-    case GLUT_KEY_RIGHT:
-        cameraX += 0.1f;
-        break;
-    case GLUT_KEY_UP:
-        cameraY += 0.1f;
-        break;
-    case GLUT_KEY_DOWN:
-        cameraY -= 0.1f;
-        break;
-    }
-    glutPostRedisplay();
-}
-/*--------------------------------------------------------------*/
 
 /*-------------------------------Movimentação do Carrinho-------------------------------*/
 void movimentaCarrinho(unsigned char key, int x, int y) {
@@ -644,6 +630,8 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
 }
 /*--------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------------------------------------*/
+
 int main(int argc, char** argv) {
       // Inicialize o SDL Mixer
     Mix_Init(MIX_INIT_MP3);
@@ -667,7 +655,6 @@ int main(int argc, char** argv) {
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
-    glutSpecialFunc(specialKeys);
     glutKeyboardFunc(movimentaCarrinho);
 
     glutMainLoop();
