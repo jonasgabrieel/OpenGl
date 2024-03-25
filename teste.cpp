@@ -107,8 +107,8 @@ void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
    
-   GLfloat mat_diffuse[] = { 0.0, 3.0, 0.0, 1.0 };
-   GLfloat mat_emission[] = { 3.0, 3.0, 0.0, 1.0 };
+   GLfloat mat_diffuse[] = { 3.0, 3.0, 0.0, 1.0 };
+   GLfloat mat_emission[] = { 5.0, 5.0, 0.0, 1.0 };
           
    //atribui características ao material
    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
@@ -151,9 +151,9 @@ void iluminar(){
    
    //fonte de luz pontual (por que a coordenada homogênea w == 1?)
    //define características a serem associadas à fonte de luz 1	
-   GLfloat light1_diffuse[] = { 0.3, 0.3, 0.3, 1.0 };
+   GLfloat light1_diffuse[] = { 0.3, 0.3, 0.0, 1.0 };
    GLfloat light1_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-   GLfloat light1_ambient[] = { 0.5, 0.5, 0.5, 1.0 };
+   GLfloat light1_ambient[] = { 0.3, 0.3, 0.0, 1.0 };
    
    //atribui as características para a fonte de luz 1
    //(experimentem remover alguns dos componentes abaixo)
@@ -332,6 +332,18 @@ void renderModel(const aiScene* scene) {
             glRotatef(-45.0f, 0.0f, 1.0f, 0.0f); 
         }
     }
+     //definir as propriedades do material para o shading
+    GLfloat materialAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    GLfloat materialDifuso[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    GLfloat materialEspecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat materialBrilho[] = {500.0f};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbiente);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDifuso);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, materialEspecular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, materialBrilho);
+
+
 
     // Carro
     glBindTexture(GL_TEXTURE_2D, texNameCarrinho); // Use a textura do carro
@@ -437,20 +449,6 @@ void display() {
 
     desenhar_luz();
     
-    // Configurar o material do carrinho
-    GLfloat mat_ambient[] = {2.0f, 0.2f, 0.2f, 1.0f};
-    GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 0.5f};
-    GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 0.5f};
-    GLfloat mat_shininess[] = {50.0f};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-      
-
-    // Cor das arestas dos triângulos (azul escuro)
-    glColor3f(0.0f, 0.0f, 0.5f);
      Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(carrinhoPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
@@ -473,6 +471,17 @@ void display() {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindTexture(GL_TEXTURE_2D, texName); // Aplica textura do terreno
     glBegin(GL_TRIANGLES);
+    // Definir as propriedades do material
+    GLfloat materialAmbiente[] = {0.2f, 0.2f, 0.0f, 1.0f};
+    GLfloat materialDifuso[] = {0.8f, 0.8f, 0.0f, 1.0f};
+    GLfloat materialEspecular[] = {1.0f, 1.0f, 0.0f, 1.0f};
+    GLfloat materialBrilho[] = {500.0f};
+
+    // Aplicar as propriedades do material à malha
+    glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbiente);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDifuso);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, materialEspecular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, materialBrilho);
     for (int i = 0; i < 39; ++i) {
         for (int j = 0; j < 79; ++j) {
             // Coordenadas dos vértices dos triângulos
