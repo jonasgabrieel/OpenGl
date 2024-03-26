@@ -182,7 +182,7 @@ int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
         return NULL;
     }
 
-    int** matriz = (int**)malloc(*altura * sizeof(int));
+    int** matriz = (int**)malloc(*altura * sizeof(int*));
 
     for (i = 0; i < *altura; ++i) {
         matriz[i] = (int*)malloc(*largura * sizeof(int));
