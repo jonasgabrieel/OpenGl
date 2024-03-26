@@ -37,6 +37,7 @@ int largura;
 int altura;
 
 const char* carrinhoPath = "carrinho.obj"; // Caminho para o arquivo OBJ do carrinho
+const char* cactoPath = "cacto.obj";
 const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
 bool hasTransparency = true; 
 GLuint texName; // Variável para armazenar o nome da textura
@@ -282,6 +283,8 @@ void renderModel(const aiScene* scene) {
         return;
     }
 
+
+
     // Inicie a matriz de transformação atual
     glPushMatrix();
     glPushAttrib(GL_CURRENT_BIT);
@@ -448,6 +451,66 @@ void renderModel(const aiScene* scene) {
     glPopAttrib();
     glPopMatrix(); // Restaure a matriz de transformação anterior
 }
+
+void renderCactus(const aiScene* scene) {
+    if (!scene) {
+        std::cerr << "Erro ao carregar o modelo do cacto." << std::endl;
+        return;
+    }
+    GLuint texNameCacto;
+    glGenTextures(1, &texNameCacto);
+    glBindTexture(GL_TEXTURE_2D, texNameCacto);
+    int width, height;
+    unsigned char* image = SOIL_load_image("texturaCacto.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+    if (!image) {
+        std::cerr << "Erro ao carregar a textura do cacto." << std::endl;
+        return;
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+    SOIL_free_image_data(image);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Inicie a matriz de transformação atual
+    glPushMatrix();
+    glPushAttrib(GL_CURRENT_BIT);
+
+    // Definir as propriedades do material para o shading
+    GLfloat materialAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    GLfloat materialDifuso[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    GLfloat materialEspecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat materialBrilho[] = {500.0f};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbiente);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDifuso);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, materialEspecular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, materialBrilho);
+
+    glTranslatef(30.0, 15.0, 0.0);
+
+    // Aplicar as coordenadas de textura do modelo do cacto
+    glBegin(GL_TRIANGLES);
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        const aiMesh* mesh = scene->mMeshes[i];
+        for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
+            const aiFace& face = mesh->mFaces[j];
+            for (unsigned int k = 0; k < face.mNumIndices; ++k) {
+                unsigned int index = face.mIndices[k];
+                const aiVector3D& vertex = mesh->mVertices[index];
+                const aiVector3D& uv = mesh->mTextureCoords[0][index]; // Coordenadas de textura do modelo
+                glTexCoord2f(uv.x, uv.y); // Aplica as coordenadas de textura do modelo do cacto
+                glVertex3f(vertex.x * scaleFactor, vertex.y * scaleFactor, vertex.z * scaleFactor);
+            }
+        }
+    }
+    glEnd();
+
+    glPopAttrib();
+    glPopMatrix(); // Restaure a matriz de transformação anterior
+}
+
 /*--------------------------------------------------------------/
 
 
@@ -477,6 +540,9 @@ void display() {
      Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(carrinhoPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
 
+    Assimp::Importer importa;
+    const aiScene* cacto  = importa.ReadFile(cactoPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+
     // Ativa o uso de textura
     glEnable(GL_TEXTURE_2D);
 
@@ -488,6 +554,7 @@ void display() {
     
 
     renderModel(scene);
+    renderCactus(cacto);
     
 
     glutSwapBuffers();
