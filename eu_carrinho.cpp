@@ -79,7 +79,7 @@ void iluminar(){
   
    //define características a serem associadas à fonte de luz 0	
    //fonte de luz direcional (por que a coordenada homogênea w == 0?)
-   GLfloat light0_position[] = { 0.0, 1.0, 0.0, 0.0 };
+   GLfloat light0_position[] = { 40.0, 20.0, -10.0, 1.0 };
    GLfloat light0_diffuse[] = { 0.3, 0.3, 0.3, 1.0 };
    
    //atribui características para a fonte de luz 0
