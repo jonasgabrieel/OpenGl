@@ -461,14 +461,14 @@ void renderCactus(const aiScene* scene) {
     glGenTextures(1, &texNameCacto);
     glBindTexture(GL_TEXTURE_2D, texNameCacto);
     int width, height;
-    unsigned char* image = SOIL_load_image("texturaCacto.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+    unsigned char* image = SOIL_load_image("cacto.jpeg", &width, &height, 0, SOIL_LOAD_RGB);
     if (!image) {
         std::cerr << "Erro ao carregar a textura do cacto." << std::endl;
         return;
     }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     SOIL_free_image_data(image);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
