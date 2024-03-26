@@ -47,8 +47,8 @@ void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
    
-   GLfloat mat_diffuse[] = { 3.0, 3.0, 0.0, 1.0 };
-   GLfloat mat_emission[] = { 5.0, 5.0, 0.0, 1.0 };
+   GLfloat mat_diffuse[] = { 0.0, 1.0, 0.0, 1.0 };
+   GLfloat mat_emission[] = { 1.0, 1.0, 0.0, 1.0 };
           
    //atribui características ao material
    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
@@ -80,7 +80,7 @@ void iluminar(){
    //define características a serem associadas à fonte de luz 0	
    //fonte de luz direcional (por que a coordenada homogênea w == 0?)
    GLfloat light0_position[] = { 40.0, 20.0, -10.0, 1.0 };
-   GLfloat light0_diffuse[] = { 0.3, 0.3, 0.3, 1.0 };
+   GLfloat light0_diffuse[] = { 0.1, 0.1, 0.1, 1.0 };
    
    //atribui características para a fonte de luz 0
    //cor padrão: branco
@@ -91,9 +91,9 @@ void iluminar(){
    
    //fonte de luz pontual (por que a coordenada homogênea w == 1?)
    //define características a serem associadas à fonte de luz 1	
-   GLfloat light1_diffuse[] = { 0.3, 0.3, 0.0, 1.0 };
+   GLfloat light1_diffuse[] = { 0.6, 0.6,0.6, 1.0 };
    GLfloat light1_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-   GLfloat light1_ambient[] = { 0.3, 0.3, 0.0, 1.0 };
+   GLfloat light1_ambient[] = { 0.1, 0.1, 0.11, 1.0 };
    
    //atribui as características para a fonte de luz 1
    //(experimentem remover alguns dos componentes abaixo)
@@ -285,12 +285,12 @@ void renderModel(const aiScene* scene) {
     // Inicie a matriz de transformação atual
     glPushMatrix();
     glPushAttrib(GL_CURRENT_BIT);
-    glColor3f(0.0f, 0.0f, 1.0f); // Defina a cor do carrinho
 
     // Translação e rotação do carrinho
     printf("Direcao:%d\n", direcaoMovimento);
     int x = carX;
     int y = carY;
+
     // O carrinho vai para o NORTE
     if(direcaoMovimento == 1){
         if(preverObstaculo(carX+1,carY, 1, 0) ){
@@ -497,10 +497,10 @@ void display() {
     glBindTexture(GL_TEXTURE_2D, texName); // Aplica textura do terreno
     glBegin(GL_TRIANGLES);
     // Definir as propriedades do material
-    GLfloat materialAmbiente[] = {0.2f, 0.2f, 0.0f, 1.0f};
-    GLfloat materialDifuso[] = {0.8f, 0.8f, 0.0f, 1.0f};
-    GLfloat materialEspecular[] = {1.0f, 1.0f, 0.0f, 1.0f};
-    GLfloat materialBrilho[] = {500.0f};
+    GLfloat materialAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f};
+    GLfloat materialDifuso[] = {0.8f, 0.8f, 0.8f, 0.5f};
+    GLfloat materialEspecular[] = {1.0f, 1.0f, 0.0f, 0.5f};
+    GLfloat materialBrilho[] = {50.0f};
 
     // Aplicar as propriedades do material à malha
     glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbiente);
