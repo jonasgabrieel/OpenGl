@@ -39,7 +39,7 @@ int altura;
 const char* carrinhoPath = "carrinho.obj"; // Caminho para o arquivo OBJ do carrinho
 const char* cactoPath = "cacto.obj";
 const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do modelo^
-bool hasTransparency = true; 
+
 GLuint texName; // Variável para armazenar o nome da textura
 
 /*-----------------Funções Auxiliares---------------------*/
@@ -453,10 +453,7 @@ void renderModel(const aiScene* scene) {
 }
 
 void renderCactus(const aiScene* scene) {
-    if (!scene) {
-        std::cerr << "Erro ao carregar o modelo do cacto." << std::endl;
-        return;
-    }
+
     GLuint texNameCacto;
     glGenTextures(1, &texNameCacto);
     glBindTexture(GL_TEXTURE_2D, texNameCacto);
