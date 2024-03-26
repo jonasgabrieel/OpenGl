@@ -47,7 +47,7 @@ void desenhar_luz(){
 	
    glPushAttrib (GL_LIGHTING_BIT);
    
-   GLfloat mat_diffuse[] = { 0.0, 1.0, 0.0, 1.0 };
+   GLfloat mat_diffuse[] = { 0.0, 1.0, 0.0, 0.0 };
    GLfloat mat_emission[] = { 1.0, 1.0, 0.0, 1.0 };
           
    //atribui características ao material
@@ -91,9 +91,9 @@ void iluminar(){
    
    //fonte de luz pontual (por que a coordenada homogênea w == 1?)
    //define características a serem associadas à fonte de luz 1	
-   GLfloat light1_diffuse[] = { 0.6, 0.6,0.6, 1.0 };
+   GLfloat light1_diffuse[] = { 1.0, 1.0, 0.0, 1.0 };
    GLfloat light1_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-   GLfloat light1_ambient[] = { 0.1, 0.1, 0.11, 1.0 };
+   GLfloat light1_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
    
    //atribui as características para a fonte de luz 1
    //(experimentem remover alguns dos componentes abaixo)
@@ -416,7 +416,7 @@ void renderModel(const aiScene* scene) {
     GLfloat materialAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f};
     GLfloat materialDifuso[] = {0.8f, 0.8f, 0.8f, 1.0f};
     GLfloat materialEspecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat materialBrilho[] = {500.0f};
+    GLfloat materialBrilho[] = {8.0f};
 
     glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbiente);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDifuso);
@@ -498,9 +498,9 @@ void display() {
     glBegin(GL_TRIANGLES);
     // Definir as propriedades do material
     GLfloat materialAmbiente[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat materialDifuso[] = {0.8f, 0.8f, 0.8f, 0.5f};
-    GLfloat materialEspecular[] = {1.0f, 1.0f, 0.0f, 0.5f};
-    GLfloat materialBrilho[] = {50.0f};
+    GLfloat materialDifuso[] = {0.5f, 0.5f, 0.5f, 0.5f};
+    GLfloat materialEspecular[] = {1.0f, 1.0f, 1.0f, 0.5f};
+    GLfloat materialBrilho[] = {32.0f};
 
     // Aplicar as propriedades do material à malha
     glMaterialfv(GL_FRONT, GL_AMBIENT, materialAmbiente);
@@ -642,7 +642,7 @@ int main(int argc, char** argv) {
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
     // Carregue e reproduza a música
-    Mix_Music* music = Mix_LoadMUS("estrada.mp3");
+    Mix_Music* music = Mix_LoadMUS("estada.mp3");
     Mix_PlayMusic(music, -1); // -1 para reprodução infinita
 
     glutInit(&argc, argv);
