@@ -41,7 +41,7 @@ const float scaleFactor = 0.01f; // Fator de escala para ajustar o tamanho do mo
 bool hasTransparency = true; 
 GLuint texName; // Variável para armazenar o nome da textura
 
-/-----------------Funções Auxiliares---------------------/
+/*-----------------Funções Auxiliares---------------------*/
 
 void desenhar_luz(){
 	
@@ -182,7 +182,7 @@ int** lerImagemPGM(const char* nomeArquivo, int* largura, int* altura) {
         return NULL;
     }
 
-    int** matriz = (int*)malloc(*altura * sizeof(int));
+    int** matriz = (int**)malloc(*altura * sizeof(int));
 
     for (i = 0; i < *altura; ++i) {
         matriz[i] = (int*)malloc(*largura * sizeof(int));
@@ -205,14 +205,16 @@ void liberarMatriz(int** matriz, int altura) {
         free(matriz);
     }
 }
-/--------------------------------------------------------------/
+
+/*--------------------------------------------------------------/
 
 
 
 /---------------------------------Funções Principais----------------------------------/
 
 
-/-----------------Carrega textura do Carro---------------------/
+/-----------------Carrega textura do Carro---------------------*/
+
 GLuint texNameCarrinho; // Variável para armazenar o nome da textura do carrinho
 
 void loadCarTexture() {
@@ -239,9 +241,11 @@ void loadCarTexture() {
     // Libera a memória alocada pela SOIL
     SOIL_free_image_data(image);
 }
-/--------------------------------------------------------------/
 
-/-----------------Carrega textura do Malha---------------------/
+/*--------------------------------------------------------------/
+
+/-----------------Carrega textura do Malha---------------------*/
+
 void loadSandTexture() {
     // Carrega a imagem JPEG usando a SOIL
     int width, height, channels;
@@ -266,11 +270,12 @@ void loadSandTexture() {
     // Libera a memória alocada pela SOIL
     SOIL_free_image_data(image);
 }
-/--------------------------------------------------------------/
+/*--------------------------------------------------------------/
 
 
 
-/-----------------Redesenha o carrinho e suas posições---------------------/
+/-----------------Redesenha o carrinho e suas posições---------------------*/
+
 void renderModel(const aiScene* scene) {
     if (!scene) {
         std::cerr << "Erro ao carregar o modelo do carrinho." << std::endl;
@@ -443,10 +448,10 @@ void renderModel(const aiScene* scene) {
     glPopAttrib();
     glPopMatrix(); // Restaure a matriz de transformação anterior
 }
-/--------------------------------------------------------------/
+/*--------------------------------------------------------------/
 
 
-/-----------------Renderizar a cena na tela---------------------/
+/-----------------Renderizar a cena na tela---------------------*/
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
@@ -579,10 +584,10 @@ void reshape(int w, int h) {
     gluPerspective(40.0, (double)w / (double)h, 1.0, 100.0);
     glMatrixMode(GL_MODELVIEW);
 }
-/--------------------------------------------------------------/
+/*--------------------------------------------------------------/
 
 
-/-------------------------------Movimentação do Carrinho-------------------------------/
+/-------------------------------Movimentação do Carrinho-------------------------------*/
 void movimentaCarrinho(unsigned char key, int x, int y) {
     switch (key) {
         case 'x':
@@ -628,10 +633,9 @@ void movimentaCarrinho(unsigned char key, int x, int y) {
     }
 
 }
-/--------------------------------------------------------------/
 
-/----------------------------------------------------------------------------------------------------/
-
+// main
+ 
 int main(int argc, char** argv) {
       // Inicialize o SDL Mixer
     Mix_Init(MIX_INIT_MP3);
