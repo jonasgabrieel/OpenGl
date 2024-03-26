@@ -656,6 +656,7 @@ int main(int argc, char** argv) {
     loadSandTexture();
     loadCarTexture();
 
+    glShadeModel (GL_SMOOTH);
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
