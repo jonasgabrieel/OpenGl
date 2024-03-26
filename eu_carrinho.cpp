@@ -12,8 +12,8 @@
 #include <SOIL/SOIL.h>
 #include <SDL2/SDL_mixer.h>
 
-// Para compilar: g++ teste.cpp -o teste -lassimp -lGL -lGLU -lglut -lSOIL -lSDL2 -lSDL2_mixer
-// Para executar: ./teste
+// Para compilar: g++ carrinho.cpp -o carrinho -lassimp -lGL -lGLU -lglut -lSOIL -lSDL2 -lSDL2_mixer
+// Para executar: ./carrinho
 
 
 // Para mover o carrinho aperte no botões W,A,S,D
