@@ -642,7 +642,7 @@ int main(int argc, char** argv) {
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 
     // Carregue e reproduza a música
-    Mix_Music* music = Mix_LoadMUS("estada.mp3");
+    Mix_Music* music = Mix_LoadMUS("estrada.mp3");
     Mix_PlayMusic(music, -1); // -1 para reprodução infinita
 
     glutInit(&argc, argv);
